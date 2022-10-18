@@ -16,8 +16,12 @@ return new class extends Migration {
     {
         Schema::create('images', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Recipe::class)->constrained()->cascadeOnDelete();
-            $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(Recipe::class)
+                ->constrained()
+                ->cascadeOnDelete();
+            $table->foreignIdFor(User::class)
+                ->constrained()
+                ->cascadeOnDelete();
             $table->integer('order', false, true);
             $table->string('path');
             $table->string('description')->nullable();

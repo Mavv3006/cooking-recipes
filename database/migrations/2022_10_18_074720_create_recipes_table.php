@@ -19,8 +19,10 @@ return new class extends Migration {
             $table->string('title', 100);
             $table->string('description');
             $table->enum('difficulty', ['easy', 'normal', 'hard']);
-            $table->integer('prep_time', false, true);
-            $table->string('prep_time_uom');
+            $table->integer('prep_time', false, true)
+                ->comment('The time it takes to cook the recipe');
+            $table->string('prep_time_uom')
+                ->comment('The unit of measure of the prep_time. Like hours or minutes.');
             $table->timestamps();
         });
     }
