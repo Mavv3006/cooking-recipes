@@ -23,11 +23,12 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::resource('recipes', RecipeController::class)
-    ->only('index', 'show', 'create')
+    ->only('index', 'show', 'create', 'store')
     ->names([
         'index' => 'recipes.all',
         'show' => 'recipes.one',
-        'create' => 'recipes.create'
+        'create' => 'recipes.create',
+        'store'=>'recipes.store',
     ]);
 
 require __DIR__ . '/auth.php';
