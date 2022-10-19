@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Recipe;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -13,9 +16,10 @@ class RecipeController extends Controller
      *
      * @return Response
      */
-    public function index()
+    public function index(): Response
     {
-        //
+        $recipes = Recipe::all();
+        return response()->view('recipes.index', ['recipes' => $recipes]);
     }
 
     /**
@@ -23,9 +27,9 @@ class RecipeController extends Controller
      *
      * @return Response
      */
-    public function create()
+    public function create(): Response
     {
-        //
+        return response()->view('recipes.create');
     }
 
     /**
@@ -47,7 +51,7 @@ class RecipeController extends Controller
      */
     public function show(Recipe $recipe)
     {
-        //
+        return response()->view('recipes.show', ['recipe' => $recipe]);
     }
 
     /**

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\RecipeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -21,4 +22,12 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-require __DIR__.'/auth.php';
+Route::resource('recipes', RecipeController::class)
+    ->only('index', 'show', 'create')
+    ->names([
+        'index' => 'recipes.all',
+        'show' => 'recipes.one',
+        'create' => 'recipes.create'
+    ]);
+
+require __DIR__ . '/auth.php';
