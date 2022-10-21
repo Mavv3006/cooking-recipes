@@ -36,4 +36,5 @@ Route::middleware([
 });
 
 Route::resource('recipes', RecipeController::class)
-    ->only('create', 'show', 'index', 'store');
+    ->only('create', 'store')
+    ->middleware(['auth:sanctum', config('jetstream.auth_session')]);

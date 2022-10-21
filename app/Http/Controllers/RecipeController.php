@@ -3,8 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Recipe;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Routing\Redirector;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class RecipeController extends Controller
@@ -34,11 +39,21 @@ class RecipeController extends Controller
      * Store a newly created resource in storage.
      *
      * @param Request $request
-     * @return Response
+     * @return Application|Redirector|RedirectResponse
      */
-    public function store(Request $request)
+    public function store(Request $request): Application|RedirectResponse|Redirector
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|string|max:100',
+            'description' => 'required|string|max:255',
+            'ingredients' => 'required|array|min:1',
+            'ingredients.*.description' => 'required',
+            'steps' => 'required|array|min:1',
+            'steps.*.description' => 'required|string',
+            'difficulty' => ['required', Rule::in(['easy', 'normal', 'hard'])],
+            'prep_time' => 'required|string|max:255',
+        ]);
+        return redirect(route('recipes.create'));
     }
 
     /**

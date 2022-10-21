@@ -17,11 +17,13 @@ return new class extends Migration {
             $table->id();
             $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
             $table->string('title', 100);
-            $table->string('description');
+            $table->string('description', 255);
             $table->enum('difficulty', ['easy', 'normal', 'hard']);
             $table->integer('prep_time', false, true)
+                ->nullable()
                 ->comment('The time it takes to cook the recipe');
             $table->string('prep_time_uom')
+                ->nullable()
                 ->comment('The unit of measure of the prep_time. Like hours or minutes.');
             $table->timestamps();
         });
