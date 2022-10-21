@@ -3,11 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Recipe;
-use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Contracts\View\Factory;
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Inertia\Inertia;
 
 class RecipeController extends Controller
 {
@@ -25,11 +23,11 @@ class RecipeController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @return Response
+     * @return \Inertia\Response
      */
-    public function create(): Response
+    public function create(): \Inertia\Response
     {
-        return response()->view('recipes.create');
+        return Inertia::render('Recipes/Create');
     }
 
     /**
