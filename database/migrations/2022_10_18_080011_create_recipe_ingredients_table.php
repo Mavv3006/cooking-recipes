@@ -21,14 +21,14 @@ return new class extends Migration {
             $table->foreignIdFor(Ingredient::class)
                 ->constrained()
                 ->cascadeOnDelete();
-            $table->integer('quantity', false, true)
-                ->default(0);
-            $table->boolean('optional')
-                ->default(false)
-                ->comment('If the ingredient is not always needed.');
-            $table->boolean('something')
-                ->default(false)
-                ->comment('If the quantity is just a little bit.');
+            $table->string('quantity')
+                ->comment('The quantity of how much of this Ingredient is needed to create the Recipe.');
+//            $table->boolean('optional')
+//                ->default(false)
+//                ->comment('If the ingredient is not always needed.');
+//            $table->boolean('something')
+//                ->default(false)
+//                ->comment('If the quantity is just a little bit.');
             $table->timestamps();
             $table->primary(['recipe_id', 'ingredient_id']);
         });

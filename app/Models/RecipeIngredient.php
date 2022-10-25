@@ -9,6 +9,6 @@ class RecipeIngredient extends Model
 {
     use HasFactory;
 
-
+    protected $fillable = ['quantity', 'recipe_id', 'ingredient_id'];
 
 }

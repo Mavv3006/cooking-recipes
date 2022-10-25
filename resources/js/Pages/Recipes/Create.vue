@@ -11,25 +11,32 @@ const form = useForm({
     _method: 'POST',
     title: '',
     description: '',
-    steps: [{description: ''}],
+    steps: [{description: '', order: 1}],
     ingredients: [{description: ''}],
-    prep_time: '',
     difficulty: '',
 });
 
 const submitForm = () => {
+    // console.debug({
+    //     title: form.title,
+    //     description: form.description,
+    //     steps: form.steps,
+    //     ingredients: form.ingredients,
+    //     difficulty: form.difficulty
+    // });
     form.post(route('recipes.store'), {onSuccess: () => form.reset()});
 }
 
 const addStep = (event) => {
     if (event) event.preventDefault();
-    form.steps.push({description: ''});
+    form.steps.push({description: '', order: form.steps[form.steps.length - 1].order + 1});
 };
 
 const removeStep = (index, event) => {
     if (event) event.preventDefault();
     form.steps.splice(index, 1);
 };
+
 
 const addIngredient = (event) => {
     if (event) event.preventDefault();
@@ -78,18 +85,6 @@ const removeIngredient = (index, event) => {
                             placeholder="z.B.: ein leckeres Abendessen."
                         />
                         <InputError :message="form.errors.description"/>
-                    </div>
-                    <div>
-                        <!-- Beschreibung -->
-                        <InputLabel for="prep_time">Zubereitungszeit</InputLabel>
-                        <TextInput
-                            id="prep_time"
-                            v-model="form.prep_time"
-                            type="text"
-                            class="w-full"
-                            placeholder="z.B.: 60 min"
-                        />
-                        <InputError :message="form.errors.prep_time"/>
                     </div>
                 </div>
 
