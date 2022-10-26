@@ -20,7 +20,7 @@ class Recipe extends Model
         'prep_time_uom'
     ];
 
-    public function author(): BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
@@ -45,9 +45,13 @@ class Recipe extends Model
         return $this->hasMany(RecipeSteps::class);
     }
 
+    public function recipeStep(): HasMany
+    {
+        return $this->steps();
+    }
+
     public function recipe_ingredients(): HasMany
     {
         return $this->hasMany(RecipeIngredient::class);
     }
-
 }

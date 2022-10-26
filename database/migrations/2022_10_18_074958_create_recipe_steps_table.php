@@ -19,7 +19,6 @@ return new class extends Migration {
                 ->constrained()
                 ->cascadeOnDelete();
             $table->text('description');
-            $table->integer('order', false, true);
             $table->timestamps();
         });
     }

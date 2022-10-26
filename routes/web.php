@@ -35,6 +35,11 @@ Route::middleware([
     })->name('dashboard');
 });
 
+//Route::resource('recipes', RecipeController::class)
+//    ->only('show');
+
 Route::resource('recipes', RecipeController::class)
     ->only('create', 'store')
     ->middleware(['auth:sanctum', config('jetstream.auth_session')]);
+
+Route::get('recipes/{recipe}', [RecipeController::class, 'show']);

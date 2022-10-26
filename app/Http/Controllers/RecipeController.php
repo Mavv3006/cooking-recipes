@@ -63,7 +63,6 @@ class RecipeController extends Controller
             ],
             'steps' => 'required|array|min:1',
             'steps.*.description' => 'required|string',
-            'steps.*.order' => 'required|integer|min:1',
             'difficulty' => ['required', Rule::in(['easy', 'normal', 'hard'])],
         ]);
 
@@ -80,11 +79,36 @@ class RecipeController extends Controller
      * Display the specified resource.
      *
      * @param Recipe $recipe
-     * @return Response
+     * @return \Inertia\Response
      */
     public function show(Recipe $recipe)
     {
-        return response()->view('recipes.show', ['recipe' => $recipe]);
+        Log::info('Showing recipe ' . $recipe->id);
+
+        $ingredients = DB::table('recipes')
+            ->join('recipe_ingredients', 'recipes.id', '=', 'recipe_ingredients.recipe_id')
+            ->join('ingredients', 'recipe_ingredients.ingredient_id', '=', 'ingredients.id')
+            ->where('recipes.id', '=', $recipe->id)
+            ->select(['quantity', 'uom', 'name'])
+            ->get();
+        $steps = $recipe
+            ->steps()
+            ->orderBy('id')
+            ->select('description')
+            ->get();
+
+        Log::debug('recipe: ' . json_encode($recipe));
+        Log::debug('steps: ' . json_encode($steps));
+        Log::debug('ingredients: ' . json_encode($ingredients));
+
+        $props = [
+            'recipe' => $recipe,
+            'ingredients' => $ingredients,
+            'steps' => $steps,
+            'user' => $recipe->user()->first(),
+        ];
+
+        return Inertia::render('Recipes/Show', $props);
     }
 
     /**
