@@ -21,12 +21,15 @@ class RecipeController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return Response
+     * @return \Inertia\Response
      */
-    public function index(): Response
+    public function index(): \Inertia\Response
     {
-        $recipes = Recipe::all();
-        return response()->view('recipes.index', ['recipes' => $recipes]);
+        $recipes = Recipe::with(['user' => fn($query) => $query->select('id', 'name')])
+            ->select('id', 'title', 'description', 'difficulty', 'user_id')
+            ->get();
+        Log::debug($recipes);
+        return Inertia::render('Recipes/Index', ['recipes' => $recipes]);
     }
 
     /**
@@ -97,9 +100,9 @@ class RecipeController extends Controller
             ->select('description')
             ->get();
 
-        Log::debug('recipe: ' . json_encode($recipe));
-        Log::debug('steps: ' . json_encode($steps));
-        Log::debug('ingredients: ' . json_encode($ingredients));
+        Log::debug('recipe: ' . $recipe);
+        Log::debug('steps: ' . $steps);
+        Log::debug('ingredients: ' . $ingredients);
 
         $props = [
             'recipe' => $recipe,
@@ -151,7 +154,7 @@ class RecipeController extends Controller
     ): void {
         Log::debug('Zubereitungsschritte anlegen');
         $steps = $validator->safe()->only(['steps'])['steps'];
-        Log::debug('steps: ' . json_encode($steps));
+        Log::debug('steps: ' . $steps);
         $recipe->steps()->createMany($steps);
         Log::info('All recipe ' . sizeof($steps) . ' steps created');
     }
@@ -172,10 +175,10 @@ class RecipeController extends Controller
     ): void {
         Log::debug('Zutaten anlegen');
         $request_ingredients = $validator->safe()->only('ingredients')['ingredients'];
-        Log::debug('ingredients: ' . json_encode($request_ingredients));
+        Log::debug('ingredients: ' . $request_ingredients);
         foreach ($request_ingredients as $request_ingredient) {
             $individual_components = preg_split('/\s/', $request_ingredient['description']);
-            Log::debug(json_encode($individual_components));
+            Log::debug($individual_components);
             $ingredient = Ingredient::firstOrCreate([
                 'name' => $individual_components[2],
                 'uom' => $individual_components[1]

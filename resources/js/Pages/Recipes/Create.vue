@@ -11,25 +11,18 @@ const form = useForm({
     _method: 'POST',
     title: '',
     description: '',
-    steps: [{description: '', order: 1}],
+    steps: [{description: ''}],
     ingredients: [{description: ''}],
     difficulty: '',
 });
 
 const submitForm = () => {
-    // console.debug({
-    //     title: form.title,
-    //     description: form.description,
-    //     steps: form.steps,
-    //     ingredients: form.ingredients,
-    //     difficulty: form.difficulty
-    // });
     form.post(route('recipes.store'), {onSuccess: () => form.reset()});
 }
 
 const addStep = (event) => {
     if (event) event.preventDefault();
-    form.steps.push({description: '', order: form.steps[form.steps.length - 1].order + 1});
+    form.steps.push({description: ''});
 };
 
 const removeStep = (index, event) => {
@@ -133,7 +126,7 @@ const removeIngredient = (index, event) => {
 
             <div class="flex max-w-7xl mx-auto space-x-8">
                 <section
-                    class="mt-6 bg-white w-full mx-auto sm:px-6 lg:px-8 overflow-hidden shadow-xl sm:rounded-lg pt-4 pb-4 basis-1/3">
+                    class="mt-6 bg-white w-full mx-auto sm:px-6 lg:px-8 overflow-hidden shadow-md sm:rounded-lg pt-4 pb-4 basis-1/3">
                     <!-- Zutaten -->
                     Zutaten
                     <p class="text-sm text-gray-600">
@@ -164,7 +157,7 @@ const removeIngredient = (index, event) => {
                 </section>
 
                 <section
-                    class="mt-6 bg-white w-full mx-auto sm:px-6 lg:px-8 overflow-hidden shadow-xl sm:rounded-lg pt-4 pb-4 basis-2/3">
+                    class="mt-6 bg-white w-full mx-auto sm:px-6 lg:px-8 overflow-hidden shadow-md sm:rounded-lg pt-4 pb-4 basis-2/3">
                     <!-- Schritte -->
                     Schritte
                     <InputError :message="form.errors.steps"/>
@@ -193,7 +186,7 @@ const removeIngredient = (index, event) => {
             </section>
 
             <div
-                class="mt-6 bg-white max-w-7xl mx-auto sm:px-6 lg:px-8 overflow-hidden shadow-xl sm:rounded-lg pt-4 pb-4">
+                class="mt-6 bg-white max-w-7xl mx-auto sm:px-6 lg:px-8 overflow-hidden shadow-md sm:rounded-lg pt-4 pb-4">
                 <!--                <ActionMessage :on="form.recentlySuccessful">-->
                 <!--                    Rezept gespeichert.-->
                 <!--                </ActionMessage>-->

@@ -22,9 +22,9 @@ const logout = () => {
 
 <template>
     <div>
-        <Head :title="title" />
+        <Head :title="title"/>
 
-        <Banner />
+        <Banner/>
 
         <div class="min-h-screen bg-gray-100">
             <nav class="bg-white border-b border-gray-100">
@@ -34,22 +34,26 @@ const logout = () => {
                         <div class="flex">
                             <!-- Logo -->
                             <div class="shrink-0 flex items-center">
-                                <Link :href="route('dashboard')">
-                                    <ApplicationMark class="block h-9 w-auto" />
+                                <Link :href="route('index')">
+                                    <ApplicationMark class="block h-9 w-auto"/>
                                 </Link>
                             </div>
 
                             <!-- Navigation Links -->
                             <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
-                                <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
-                                    Dashboard
+                                <NavLink :href="route('recipes.index')" :active="route().current('recipes.index')">
+                                    Rezepte
+                                </NavLink>
+                                <NavLink :href="route('recipes.create')" :active="route().current('recipes.create')"
+                                         v-if="$page.props.auth.user">
+                                    Rezept erstellen
                                 </NavLink>
                             </div>
                         </div>
 
                         <div class="hidden sm:flex sm:items-center sm:ml-6">
                             <!-- Settings Dropdown -->
-                            <div class="ml-3 relative" v-if="$page.props.user">
+                            <div class="ml-3 relative" v-if="$page.props.auth.user">
                                 <Dropdown align="right" width="48">
                                     <template #trigger>
                                         <span class="inline-flex rounded-md">
@@ -81,7 +85,7 @@ const logout = () => {
                                             Profile
                                         </DropdownLink>
 
-                                        <div class="border-t border-gray-100" />
+                                        <div class="border-t border-gray-100"/>
 
                                         <!-- Authentication -->
                                         <form @submit.prevent="logout">
@@ -93,13 +97,15 @@ const logout = () => {
                                 </Dropdown>
                             </div>
                             <div class="ml-3 relative" v-else>
-                                <button>Login</button>
+                                <NavLink :href="route('login')">Login</NavLink>
                             </div>
                         </div>
 
                         <!-- Hamburger -->
                         <div class="-mr-2 flex items-center sm:hidden">
-                            <button class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition" @click="showingNavigationDropdown = ! showingNavigationDropdown">
+                            <button
+                                class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition"
+                                @click="showingNavigationDropdown = ! showingNavigationDropdown">
                                 <svg
                                     class="h-6 w-6"
                                     stroke="currentColor"
@@ -127,15 +133,20 @@ const logout = () => {
                 </div>
 
                 <!-- Responsive Navigation Menu -->
-                <div :class="{'block': showingNavigationDropdown, 'hidden': ! showingNavigationDropdown}" class="sm:hidden">
+                <div :class="{'block': showingNavigationDropdown, 'hidden': ! showingNavigationDropdown}"
+                     class="sm:hidden">
                     <div class="pt-2 pb-3 space-y-1">
-                        <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
-                            Dashboard
+                        <ResponsiveNavLink :href="route('recipes.index')" :active="route().current('recipes.index')">
+                            Rezepte
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('recipes.create')" :active="route().current('recipes.create')"
+                                           v-if="$page.props.auth.user">
+                            Rezept erstellen
                         </ResponsiveNavLink>
                     </div>
 
                     <!-- Responsive Settings Options -->
-                    <div class="pt-4 pb-1 border-t border-gray-200" v-if="$page.props.user">
+                    <div class="pt-4 pb-1 border-t border-gray-200" v-if="$page.props.auth.user">
                         <div class="flex items-center px-4">
                             <div v-if="$page.props.jetstream.managesProfilePhotos" class="shrink-0 mr-3">
                                 <img class="h-10 w-10 rounded-full object-cover"
@@ -157,7 +168,9 @@ const logout = () => {
                                 Profile
                             </ResponsiveNavLink>
 
-                            <ResponsiveNavLink v-if="$page.props.jetstream.hasApiFeatures" :href="route('api-tokens.index')" :active="route().current('api-tokens.index')">
+                            <ResponsiveNavLink v-if="$page.props.jetstream.hasApiFeatures"
+                                               :href="route('api-tokens.index')"
+                                               :active="route().current('api-tokens.index')">
                                 API Tokens
                             </ResponsiveNavLink>
 
@@ -170,22 +183,25 @@ const logout = () => {
 
                             <!-- Team Management -->
                             <template v-if="$page.props.jetstream.hasTeamFeatures">
-                                <div class="border-t border-gray-200" />
+                                <div class="border-t border-gray-200"/>
 
                                 <div class="block px-4 py-2 text-xs text-gray-400">
                                     Manage Team
                                 </div>
 
                                 <!-- Team Settings -->
-                                <ResponsiveNavLink :href="route('teams.show', $page.props.user.current_team)" :active="route().current('teams.show')">
+                                <ResponsiveNavLink :href="route('teams.show', $page.props.user.current_team)"
+                                                   :active="route().current('teams.show')">
                                     Team Settings
                                 </ResponsiveNavLink>
 
-                                <ResponsiveNavLink v-if="$page.props.jetstream.canCreateTeams" :href="route('teams.create')" :active="route().current('teams.create')">
+                                <ResponsiveNavLink v-if="$page.props.jetstream.canCreateTeams"
+                                                   :href="route('teams.create')"
+                                                   :active="route().current('teams.create')">
                                     Create New Team
                                 </ResponsiveNavLink>
 
-                                <div class="border-t border-gray-200" />
+                                <div class="border-t border-gray-200"/>
 
                                 <!-- Team Switcher -->
                                 <div class="block px-4 py-2 text-xs text-gray-400">
@@ -205,7 +221,9 @@ const logout = () => {
                                                     stroke-width="2"
                                                     stroke="currentColor"
                                                     viewBox="0 0 24 24"
-                                                ><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                >
+                                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
                                                 <div>{{ team.name }}</div>
                                             </div>
                                         </ResponsiveNavLink>
@@ -220,13 +238,13 @@ const logout = () => {
             <!-- Page Heading -->
             <header v-if="$slots.header" class="bg-white shadow">
                 <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                    <slot name="header" />
+                    <slot name="header"/>
                 </div>
             </header>
 
             <!-- Page Content -->
             <main>
-                <slot />
+                <slot/>
             </main>
         </div>
     </div>

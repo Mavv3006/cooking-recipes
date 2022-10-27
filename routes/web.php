@@ -23,23 +23,11 @@ Route::get('/', function () {
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
     ]);
-});
-
-Route::middleware([
-    'auth:sanctum',
-    config('jetstream.auth_session'),
-    'verified',
-])->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
-});
-
-//Route::resource('recipes', RecipeController::class)
-//    ->only('show');
+})->name('index');
 
 Route::resource('recipes', RecipeController::class)
     ->only('create', 'store')
     ->middleware(['auth:sanctum', config('jetstream.auth_session')]);
 
-Route::get('recipes/{recipe}', [RecipeController::class, 'show']);
+Route::get('recipes/{recipe}', [RecipeController::class, 'show'])->name('recipes.show');
+Route::get('recipes', [RecipeController::class, 'index'])->name('recipes.index');
