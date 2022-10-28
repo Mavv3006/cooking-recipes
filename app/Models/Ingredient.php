@@ -15,7 +15,7 @@ class Ingredient extends Model
 
     public function recipes(): BelongsToMany
     {
-        return $this->belongsToMany(Recipe::class, 'recipe_ingredients');
+        return $this->belongsToMany(Recipe::class, 'recipe_ingredients')->using(RecipeIngredient::class);
     }
 
     public function recipe_ingredients(): HasMany

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\FavoritesController;
 use App\Http\Controllers\RecipeController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -25,9 +26,18 @@ Route::get('/', function () {
     ]);
 })->name('index');
 
-Route::resource('recipes', RecipeController::class)
-    ->only('create', 'store')
-    ->middleware(['auth:sanctum', config('jetstream.auth_session')]);
+Route::prefix('recipes')->group(function () {
+    Route::get('', [RecipeController::class, 'index'])->name('recipes.index');
+    Route::resource('', RecipeController::class)
+        ->only('create', 'store')
+        ->names(['create' => 'recipes.create', 'store' => 'recipes.store'])
+        ->middleware(['auth:sanctum', config('jetstream.auth_session')]);
+    Route::get('/{recipe}', [RecipeController::class, 'show'])->name('recipes.show');
+    Route::post('/{recipe}/favorite', [FavoritesController::class, 'store'])
+        ->middleware(['auth:sanctum', config('jetstream.auth_session')])
+        ->name('favorites.store');
+});
 
-Route::get('recipes/{recipe}', [RecipeController::class, 'show'])->name('recipes.show');
-Route::get('recipes', [RecipeController::class, 'index'])->name('recipes.index');
+Route::resource('user/profile/favorites', FavoritesController::class)
+    ->only('index', 'destroy')
+    ->middleware(['auth:sanctum', config('jetstream.auth_session')]);
