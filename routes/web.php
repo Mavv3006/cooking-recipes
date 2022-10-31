@@ -38,6 +38,6 @@ Route::prefix('recipes')->group(function () {
         ->name('favorites.store');
 });
 
-Route::resource('user/profile/favorites', FavoritesController::class)
-    ->only('index', 'destroy')
-    ->middleware(['auth:sanctum', config('jetstream.auth_session')]);
+Route::get('user/profile/favorites', [FavoritesController::class, 'index'])
+    ->middleware(['auth:sanctum', config('jetstream.auth_session')])
+    ->name('user.favorites');

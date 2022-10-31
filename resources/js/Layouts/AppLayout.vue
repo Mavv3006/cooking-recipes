@@ -48,6 +48,10 @@ const logout = () => {
                                          v-if="$page.props.auth.user">
                                     Rezept erstellen
                                 </NavLink>
+                                <NavLink :href="route('user.favorites')" :active="route().current('user.favorites')"
+                                         v-if="$page.props.auth.user">
+                                    Favoriten
+                                </NavLink>
                             </div>
                         </div>
 

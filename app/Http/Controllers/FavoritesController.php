@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Favorites;
 use App\Models\Recipe;
-use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Routing\Redirector;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class FavoritesController extends Controller
 {
@@ -17,34 +15,33 @@ class FavoritesController extends Controller
      *
      * @return Response
      */
-    public function index()
+    public function index(): Response
     {
-        //
+        $favorites = Auth::user()
+            ->favorites()
+            ->with(['user' => fn($query) => $query->select('id', 'name')])
+            ->orderByPivot('created_at', 'desc')
+            ->select('id', 'title', 'description', 'difficulty', 'recipes.user_id')
+            ->get();
+        return Inertia::render('Favorites/Index', ['favorites' => $favorites]);
     }
 
     /**
      * Store a newly created resource in storage.
      *
      * @param Recipe $recipe
-     * @param Request $request
-     * @return Application|RedirectResponse|Redirector
+     * @return RedirectResponse
      */
-    public function store(Recipe $recipe, Request $request): Application|RedirectResponse|Redirector
+    public function store(Recipe $recipe): RedirectResponse
     {
-        $user = $recipe->user();
-        Favorites::create(['user_id' => $user->id, 'recipe_id' => $recipe->id]);
+        $favorite = Auth::user()->favorites()->where('id', $recipe->id)->first();
 
-        return redirect(route('recipes.show', $recipe->id));
-    }
+        if ($favorite) {
+            Auth::user()->favorites()->detach($recipe->id);
+        } else {
+            Auth::user()->favorites()->attach($recipe->id);
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param int $id
-     * @return Response
-     */
-    public function destroy($id)
-    {
-        //
+        return back();
     }
 }
