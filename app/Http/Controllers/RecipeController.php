@@ -8,22 +8,23 @@ use App\Models\RecipeIngredient;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Routing\Redirector;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class RecipeController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
-     * @return \Inertia\Response
+     * @return Response
      */
-    public function index(): \Inertia\Response
+    public function index(): Response
     {
         $recipes = Recipe::with(['user' => fn($query) => $query->select('id', 'name')])
             ->select('id', 'title', 'description', 'difficulty', 'user_id')
@@ -35,9 +36,9 @@ class RecipeController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Inertia\Response
+     * @return Response
      */
-    public function create(): \Inertia\Response
+    public function create(): Response
     {
         return Inertia::render('Recipes/Create');
     }
@@ -75,23 +76,21 @@ class RecipeController extends Controller
         $this->createRecipeIngredients($validator, $recipe);
         DB::commit();
 
-        return redirect(route('recipes.create'));
+        return redirect()->route('recipes.show', ['recipe' => $recipe->id]);
     }
 
     /**
      * Display the specified resource.
      *
      * @param Recipe $recipe
-     * @return \Inertia\Response
+     * @return Response
      */
-    public function show(Recipe $recipe)
+    public function show(Recipe $recipe): Response
     {
-        Log::info('Showing recipe ' . $recipe->id);
-
         $ingredients = DB::table('recipes')
             ->join('recipe_ingredients', 'recipes.id', '=', 'recipe_ingredients.recipe_id')
             ->join('ingredients', 'recipe_ingredients.ingredient_id', '=', 'ingredients.id')
-            ->where('recipes.id', '=', $recipe->id)
+            ->where('recipes.id', $recipe->id)
             ->select(['quantity', 'uom', 'name'])
             ->get();
         $steps = $recipe
@@ -99,16 +98,23 @@ class RecipeController extends Controller
             ->orderBy('id')
             ->select('description')
             ->get();
-
-        Log::debug('recipe: ' . $recipe);
-        Log::debug('steps: ' . $steps);
-        Log::debug('ingredients: ' . $ingredients);
+        $is_favorite = null;
+        $is_logged_in = Auth::check();
+        if ($is_logged_in) {
+            $favorite = Auth::user()
+                ->favorites()
+                ->where('id', $recipe->id)
+                ->first();
+            $is_favorite = !($favorite == null);
+        }
 
         $props = [
             'recipe' => $recipe,
             'ingredients' => $ingredients,
             'steps' => $steps,
             'user' => $recipe->user()->first(),
+            'is_favorite' => $is_favorite,
+            'is_logged_in' => $is_logged_in
         ];
 
         return Inertia::render('Recipes/Show', $props);
@@ -154,7 +160,7 @@ class RecipeController extends Controller
     ): void {
         Log::debug('Zubereitungsschritte anlegen');
         $steps = $validator->safe()->only(['steps'])['steps'];
-        Log::debug('steps: ' . $steps);
+        Log::debug('steps: ' . json_encode($steps));
         $recipe->steps()->createMany($steps);
         Log::info('All recipe ' . sizeof($steps) . ' steps created');
     }
@@ -175,10 +181,10 @@ class RecipeController extends Controller
     ): void {
         Log::debug('Zutaten anlegen');
         $request_ingredients = $validator->safe()->only('ingredients')['ingredients'];
-        Log::debug('ingredients: ' . $request_ingredients);
+        Log::debug('ingredients: ' . json_encode($request_ingredients));
         foreach ($request_ingredients as $request_ingredient) {
             $individual_components = preg_split('/\s/', $request_ingredient['description']);
-            Log::debug($individual_components);
+            Log::debug(json_encode($individual_components));
             $ingredient = Ingredient::firstOrCreate([
                 'name' => $individual_components[2],
                 'uom' => $individual_components[1]

@@ -1,12 +1,25 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
+import {useForm} from "@inertiajs/inertia-vue3";
 
-defineProps({
+const props = defineProps({
     recipe: Object,
     ingredients: Array,
     steps: Array,
-    user: Object
+    user: Object,
+    is_favorite: Boolean,
+    test: Object,
+    is_logged_in: Boolean
 });
+
+const form = useForm({
+    _method: 'POST'
+});
+
+const toggleFavorite = () => {
+    console.log("test")
+    form.post(route('favorites.store', {'recipe': props.recipe.id}));
+}
 </script>
 
 
@@ -17,6 +30,18 @@ defineProps({
                 {{ recipe.title }}
             </h2>
         </template>
+
+        <section
+            class="bg-white max-w-7xl mx-auto sm:px-6 lg:px-8 overflow-hidden shadow-md sm:rounded-lg pt-4 pb-4 mt-12"
+            v-if="is_logged_in">
+            <div>Ist favorisiert? {{ is_favorite ? "Ja" : "Nein" }}</div>
+            <div class="mt-4">
+                <button @click="toggleFavorite"
+                        class=" inline-flex items-center px-4 py-2 bg-gray-200 border border-transparent rounded-md hover:bg-gray-100 active:bg-gray-300 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25 transition">
+                    {{ is_favorite ? "Favorit entfernen" : "Favorit hinzufügen" }}
+                </button>
+            </div>
+        </section>
 
         <section
             class="bg-white max-w-7xl mx-auto sm:px-6 lg:px-8 overflow-hidden shadow-md sm:rounded-lg pt-4 pb-4 mt-12">
