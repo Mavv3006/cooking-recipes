@@ -29,7 +29,6 @@ class RecipeController extends Controller
         $recipes = Recipe::with(['user' => fn($query) => $query->select('id', 'name')])
             ->select('id', 'title', 'description', 'difficulty', 'user_id')
             ->get();
-        Log::debug($recipes);
         return Inertia::render('Recipes/Index', ['recipes' => $recipes]);
     }
 
@@ -46,7 +45,7 @@ class RecipeController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param Request $request
+     * @param  Request  $request
      * @return Application|Redirector|RedirectResponse
      */
     public function store(Request $request): Application|RedirectResponse|Redirector
@@ -82,22 +81,27 @@ class RecipeController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param Recipe $recipe
+     * @param  Recipe  $recipe
      * @return Response
      */
     public function show(Recipe $recipe): Response
     {
+        // Ingredients for this recipe
         $ingredients = DB::table('recipes')
             ->join('recipe_ingredients', 'recipes.id', '=', 'recipe_ingredients.recipe_id')
             ->join('ingredients', 'recipe_ingredients.ingredient_id', '=', 'ingredients.id')
             ->where('recipes.id', $recipe->id)
             ->select(['quantity', 'uom', 'name'])
             ->get();
+
+        // Steps in this recipe
         $steps = $recipe
             ->steps()
             ->orderBy('id')
             ->select('description')
             ->get();
+
+        // Whether the recipe is a favorite for the logged-in user
         $is_favorite = null;
         $is_logged_in = Auth::check();
         if ($is_logged_in) {
@@ -108,13 +112,22 @@ class RecipeController extends Controller
             $is_favorite = !($favorite == null);
         }
 
+        // available comments for this recipe
+        $comments = $recipe->comments()
+            ->with(['user' => fn($query) => $query->select('id', 'name')])
+            ->orderBy('created_at')
+            ->select('comment', 'created_at', 'updated_at', 'user_id', 'id')
+            ->get();
+
+        // return object
         $props = [
             'recipe' => $recipe,
             'ingredients' => $ingredients,
             'steps' => $steps,
             'user' => $recipe->user()->first(),
             'is_favorite' => $is_favorite,
-            'is_logged_in' => $is_logged_in
+            'is_logged_in' => $is_logged_in,
+            'comments' => $comments
         ];
 
         return Inertia::render('Recipes/Show', $props);
@@ -123,7 +136,7 @@ class RecipeController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param Recipe $recipe
+     * @param  Recipe  $recipe
      * @return Response
      */
     public function edit(Recipe $recipe)
@@ -134,8 +147,8 @@ class RecipeController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param Request $request
-     * @param Recipe $recipe
+     * @param  Request  $request
+     * @param  Recipe  $recipe
      * @return Response
      */
     public function update(Request $request, Recipe $recipe)
@@ -146,7 +159,7 @@ class RecipeController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param Recipe $recipe
+     * @param  Recipe  $recipe
      * @return Response
      */
     public function destroy(Recipe $recipe)

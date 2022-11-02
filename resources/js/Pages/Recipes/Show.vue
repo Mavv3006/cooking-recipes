@@ -1,6 +1,14 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import {useForm} from "@inertiajs/inertia-vue3";
+import InputError from '@/Components/InputError.vue';
+import PrimaryButton from '@/Components/PrimaryButton.vue';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import Comment from "@/Components/Comment.vue";
+import {ref} from "vue";
+
+dayjs.extend(relativeTime);
 
 const props = defineProps({
     recipe: Object,
@@ -9,17 +17,30 @@ const props = defineProps({
     user: Object,
     is_favorite: Boolean,
     test: Object,
-    is_logged_in: Boolean
+    is_logged_in: Boolean,
+    comments: Array
 });
 
-const form = useForm({
+const favoriteForm = useForm({
     _method: 'POST'
 });
+const commentCreateForm = useForm({
+    _method: 'POST',
+    comment: '',
+    recipe_id: props.recipe.id
+});
+
+const commenting = ref(false);
 
 const toggleFavorite = () => {
-    console.log("test")
-    form.post(route('favorites.store', {'recipe': props.recipe.id}));
+    favoriteForm.post(route('favorites.store', {'recipe': props.recipe.id}));
 }
+
+const submitCreateForm = () => {
+    console.log('submitting the create form', commentCreateForm);
+    commentCreateForm.post(route('comment.create'), {onSuccess: () => commenting.value = false});
+    commentCreateForm.reset();
+};
 </script>
 
 
@@ -69,6 +90,37 @@ const toggleFavorite = () => {
                     {{ step.description }}
                 </li>
             </ul>
+        </section>
+
+        <section
+            class="max-w-7xl mx-auto mt-6 bg-white overflow-hidden shadow-md sm:rounded-lg pt-4 pb-4 sm:px-6 lg:px-8">
+            <h3>Kommentare</h3>
+
+            <div class="flex justify-center">
+                <button
+                    class="border-2 rounded-full py-2 px-4 hover:bg-gray-200 hover:border-gray-300 active:bg-gray-300 active:border-gray-400 hover:shadow-sm"
+                    @click="commenting=true"
+                    v-if="commenting===false">
+                    <span class="fa-solid fa-pen pr-2"></span>
+                    Kommentar schreiben
+                </button>
+            </div>
+            <form v-if="commenting===true" @submit.prevent="submitCreateForm">
+                    <textarea v-model="commentCreateForm.comment"
+                              class="mt-4 w-full text-gray-900 border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm"></textarea>
+                <InputError :message="commentCreateForm.errors.comment" class="mt-2"/>
+                <div class="space-x-2">
+                    <PrimaryButton class="mt-4">Save</PrimaryButton>
+                    <button class="mt-4"
+                            @click="commenting = false; commentCreateForm.reset(); commentCreateForm.clearErrors()">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+
+            <div class="flex space-y-6 flex-col mt-4">
+                <Comment v-for="comment in comments" :comment="comment" :key="comment.id"></Comment>
+            </div>
         </section>
 
     </AppLayout>

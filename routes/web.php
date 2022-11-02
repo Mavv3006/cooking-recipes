@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\FavoritesController;
 use App\Http\Controllers\RecipeController;
 use Illuminate\Foundation\Application;
@@ -37,6 +38,17 @@ Route::prefix('recipes')->group(function () {
         ->middleware(['auth:sanctum', config('jetstream.auth_session')])
         ->name('favorites.store');
 });
+
+Route::prefix('comments')
+    ->middleware(['auth:sanctum', config('jetstream.auth_session')])
+    ->group(function () {
+        Route::post('', [CommentController::class, 'store'])
+            ->name('comment.create');
+        Route::match(['put', 'patch'], '/{comment}', [CommentController::class, 'update'])
+            ->name('comment.update');
+        Route::delete('/{comment}', [CommentController::class, 'destroy'])
+            ->name('comment.delete');
+    });
 
 Route::get('user/profile/favorites', [FavoritesController::class, 'index'])
     ->middleware(['auth:sanctum', config('jetstream.auth_session')])
