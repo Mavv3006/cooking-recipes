@@ -24,7 +24,6 @@ return new class extends Migration {
                 ->constrained()
                 ->cascadeOnDelete();
             $table->enum('stars', [1, 2, 3, 4, 5]);
-            $table->string('comment', 250)->nullable();
             $table->timestamps();
         });
     }

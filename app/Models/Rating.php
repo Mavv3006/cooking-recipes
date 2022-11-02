@@ -12,7 +12,8 @@ class Rating extends Model
 
     protected $fillable = [
         'stars',
-        'comment'
+        'user_id',
+        'recipe_id'
     ];
 
     public function user(): BelongsTo
