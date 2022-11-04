@@ -16,7 +16,6 @@ return new class extends Migration {
     {
         Schema::enableForeignKeyConstraints();
         Schema::create('ratings', function (Blueprint $table) {
-            $table->id();
             $table->foreignIdFor(User::class)
                 ->constrained()
                 ->cascadeOnDelete();
@@ -25,6 +24,7 @@ return new class extends Migration {
                 ->cascadeOnDelete();
             $table->enum('stars', [1, 2, 3, 4, 5]);
             $table->timestamps();
+            $table->primary(['user_id', 'recipe_id']);
         });
     }
 

@@ -35,15 +35,18 @@ class RatingController extends Controller
 
         $data = $validator->validate();
 
-        $rating_data = [
-            'stars' => $data['stars'],
-            'recipe_id' => $data['recipe_id'],
-            'user_id' => Auth::id()
-        ];
+        $recipe_id = $data['recipe_id'];
+        $stars = $data['stars'];
+        $has_rated = sizeof(Auth::user()->whereRelation('ratings', 'recipe_id', $recipe_id)->get()) > 0;
+        Log::debug($has_rated ? 'true' : 'false');
 
-        Log::debug(json_encode($rating_data), ['class' => get_class($this)]);
-        $rating = Rating::create($rating_data);
-        Log::info('Created rating ' . $rating);
+        if ($has_rated) {
+            Auth::user()->ratings()->updateExistingPivot($recipe_id, ['stars' => $stars]);
+        } else {
+            Auth::user()->ratings()->attach($recipe_id, ['stars' => $stars]);
+        }
+        Log::info('Attached user ' . Auth::id() . ' with recipe ' . $recipe_id . ' with ' . $stars . ' stars');
+
 
         return back();
     }

@@ -61,9 +61,11 @@ class User extends Authenticatable
         return $this->hasMany(Comment::class);
     }
 
-    public function ratings(): HasMany
+    public function ratings(): BelongsToMany
     {
-        return $this->hasMany(Rating::class);
+        return $this->belongsToMany(Recipe::class, 'ratings', 'user_id', 'recipe_id')
+            ->using(Rating::class)
+            ->withTimestamps();
     }
 
     public function images(): HasMany

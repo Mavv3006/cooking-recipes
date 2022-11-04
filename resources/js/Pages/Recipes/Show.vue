@@ -32,7 +32,6 @@ const commentCreateForm = useForm({
 });
 
 const commenting = ref(false);
-const is_rating = ref(false);
 
 const toggleFavorite = () => {
     favoriteForm.post(route('favorites.store', {'recipe': props.recipe.id}));
@@ -72,13 +71,7 @@ const submitCreateForm = () => {
             class="bg-white max-w-7xl mx-auto sm:px-6 lg:px-8 overflow-hidden shadow-md sm:rounded-lg pt-4 pb-4 mt-12">
             <p>{{ recipe.description }}</p>
             <p>Erstellt {{ recipe.created_at }} von {{ user.name }}</p>
-            <button
-                v-if="is_rating === false"
-                @click="is_rating = true"
-                class="inline-flex items-center mt-2 px-4 py-2 bg-gray-200 border border-transparent rounded-md hover:bg-gray-100 active:bg-gray-300 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25 transition">
-                Bewerten
-            </button>
-            <RatingForm class="mt-2" v-if="is_rating === true"></RatingForm>
+                <RatingForm class="mt-2" :recipe_id="recipe.id"/>
         </section>
 
         <!-- ingredients -->
