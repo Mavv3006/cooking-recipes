@@ -11,6 +11,8 @@ class Rating extends Pivot
 {
     use HasFactory;
 
+    protected $table = 'ratings';
+
     protected $fillable = [
         'stars',
         'user_id',
