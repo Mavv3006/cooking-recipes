@@ -5,14 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class Rating extends Model
+class Rating extends Pivot
 {
     use HasFactory;
 
+    protected $table = 'ratings';
+
     protected $fillable = [
         'stars',
-        'comment'
+        'user_id',
+        'recipe_id'
     ];
 
     public function user(): BelongsTo

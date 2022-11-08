@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Comment;
 use App\Models\Ingredient;
+use App\Models\Rating;
 use App\Models\Recipe;
 use App\Models\RecipeSteps;
 use App\Models\User;
@@ -39,6 +40,15 @@ class RecipeSeeder extends Seeder
                 ->count(5)
                 ->state(new Sequence(
                     fn($sequence) => ['user_id' => User::all()->random(1)->first()->id]
+                ))
+                ->create([
+                    'recipe_id' => $recipe->id
+                ]);
+            $users = User::all()->random(5);
+            Rating::factory()
+                ->count(5)
+                ->state(new Sequence(
+                    fn($sequence) => ['user_id' => $users[$sequence->index]]
                 ))
                 ->create([
                     'recipe_id' => $recipe->id

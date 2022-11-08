@@ -16,9 +16,10 @@ class CommentController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  Request  $request
+     * @param Request $request
      * @return RedirectResponse
-     * @throws AuthorizationException|ValidationException
+     * @throws AuthorizationException
+     * @throws ValidationException
      */
     public function store(Request $request): RedirectResponse
     {
@@ -37,7 +38,7 @@ class CommentController extends Controller
             'user_id' => Auth::id()
         ];
 
-        Log::debug(json_encode($comment_data));
+        Log::debug(json_encode($comment_data), ['class' => get_class($this)]);
         $comment = Comment::create($comment_data);
         Log::info('Created comment ' . $comment->id);
 
@@ -47,8 +48,8 @@ class CommentController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  Request  $request
-     * @param  Comment  $comment
+     * @param Request $request
+     * @param Comment $comment
      * @return RedirectResponse
      * @throws AuthorizationException
      */
@@ -69,7 +70,7 @@ class CommentController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  Comment  $comment
+     * @param Comment $comment
      * @return RedirectResponse
      * @throws AuthorizationException
      */

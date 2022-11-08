@@ -45,7 +45,7 @@ class RecipeController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  Request  $request
+     * @param Request $request
      * @return Application|Redirector|RedirectResponse
      */
     public function store(Request $request): Application|RedirectResponse|Redirector
@@ -81,7 +81,7 @@ class RecipeController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  Recipe  $recipe
+     * @param Recipe $recipe
      * @return Response
      */
     public function show(Recipe $recipe): Response
@@ -119,6 +119,14 @@ class RecipeController extends Controller
             ->select('comment', 'created_at', 'updated_at', 'user_id', 'id')
             ->get();
 
+        // available ratings
+        $ratings = $recipe->ratings()
+            ->get()
+            ->pipe(fn($collection) => [
+                'count' => $collection->count('stars'),
+                'avg' => $collection->avg('stars')
+            ]);
+
         // return object
         $props = [
             'recipe' => $recipe,
@@ -127,7 +135,8 @@ class RecipeController extends Controller
             'user' => $recipe->user()->first(),
             'is_favorite' => $is_favorite,
             'is_logged_in' => $is_logged_in,
-            'comments' => $comments
+            'comments' => $comments,
+            'ratings' => $ratings
         ];
 
         return Inertia::render('Recipes/Show', $props);
@@ -136,7 +145,7 @@ class RecipeController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  Recipe  $recipe
+     * @param Recipe $recipe
      * @return Response
      */
     public function edit(Recipe $recipe)
@@ -147,8 +156,8 @@ class RecipeController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  Request  $request
-     * @param  Recipe  $recipe
+     * @param Request $request
+     * @param Recipe $recipe
      * @return Response
      */
     public function update(Request $request, Recipe $recipe)
@@ -159,7 +168,7 @@ class RecipeController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  Recipe  $recipe
+     * @param Recipe $recipe
      * @return Response
      */
     public function destroy(Recipe $recipe)
@@ -169,8 +178,9 @@ class RecipeController extends Controller
 
     private function createRecipeSteps(
         \Illuminate\Contracts\Validation\Validator|\Illuminate\Validation\Validator $validator,
-        $recipe
-    ): void {
+                                                                                    $recipe
+    ): void
+    {
         Log::debug('Zubereitungsschritte anlegen');
         $steps = $validator->safe()->only(['steps'])['steps'];
         Log::debug('steps: ' . json_encode($steps));
@@ -179,9 +189,10 @@ class RecipeController extends Controller
     }
 
     private function createRecipe(
-        Request $request,
+        Request                                                                     $request,
         \Illuminate\Contracts\Validation\Validator|\Illuminate\Validation\Validator $validator
-    ): mixed {
+    ): mixed
+    {
         Log::debug('Rezept anlegen');
         $recipe = $request->user()->recipes()->create($validator->validate());
         Log::info('Recipe created: ' . $recipe->id);
@@ -190,8 +201,9 @@ class RecipeController extends Controller
 
     private function createRecipeIngredients(
         \Illuminate\Contracts\Validation\Validator|\Illuminate\Validation\Validator $validator,
-        mixed $recipe
-    ): void {
+        mixed                                                                       $recipe
+    ): void
+    {
         Log::debug('Zutaten anlegen');
         $request_ingredients = $validator->safe()->only('ingredients')['ingredients'];
         Log::debug('ingredients: ' . json_encode($request_ingredients));

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\FavoritesController;
+use App\Http\Controllers\RatingController;
 use App\Http\Controllers\RecipeController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -48,6 +49,15 @@ Route::prefix('comments')
             ->name('comment.update');
         Route::delete('/{comment}', [CommentController::class, 'destroy'])
             ->name('comment.delete');
+    });
+
+Route::prefix('ratings')
+    ->middleware(['auth:sanctum', config('jetstream.auth_session')])
+    ->group(function () {
+        Route::post('', [RatingController::class, 'store'])
+            ->name('ratings.create');
+        Route::delete('/{rating}', [RatingController::class, 'destroy'])
+            ->name('ratings.delete');
     });
 
 Route::get('user/profile/favorites', [FavoritesController::class, 'index'])

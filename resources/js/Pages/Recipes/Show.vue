@@ -2,6 +2,7 @@
 import AppLayout from '@/Layouts/AppLayout.vue';
 import {useForm} from "@inertiajs/inertia-vue3";
 import InputError from '@/Components/InputError.vue';
+import RatingForm from '@/Components/RatingForm.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -18,7 +19,8 @@ const props = defineProps({
     is_favorite: Boolean,
     test: Object,
     is_logged_in: Boolean,
-    comments: Array
+    comments: Array,
+    ratings: Object
 });
 
 const favoriteForm = useForm({
@@ -52,24 +54,31 @@ const submitCreateForm = () => {
             </h2>
         </template>
 
+        <!-- Favorite -->
         <section
             class="bg-white max-w-7xl mx-auto sm:px-6 lg:px-8 overflow-hidden shadow-md sm:rounded-lg pt-4 pb-4 mt-12"
             v-if="is_logged_in">
             <div>Ist favorisiert? {{ is_favorite ? "Ja" : "Nein" }}</div>
             <div class="mt-4">
                 <button @click="toggleFavorite"
-                        class=" inline-flex items-center px-4 py-2 bg-gray-200 border border-transparent rounded-md hover:bg-gray-100 active:bg-gray-300 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25 transition">
+                        class="inline-flex items-center px-4 py-2 bg-gray-200 border border-transparent rounded-md hover:bg-gray-100 active:bg-gray-300 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25 transition">
                     {{ is_favorite ? "Favorit entfernen" : "Favorit hinzufügen" }}
                 </button>
             </div>
         </section>
 
+        <!-- Meta data-->
         <section
             class="bg-white max-w-7xl mx-auto sm:px-6 lg:px-8 overflow-hidden shadow-md sm:rounded-lg pt-4 pb-4 mt-12">
             <p>{{ recipe.description }}</p>
             <p>Erstellt {{ recipe.created_at }} von {{ user.name }}</p>
+            <RatingForm class="mt-2" :recipe_id="recipe.id"/>
+            <div class="mt-3">
+                Bewertung: {{ ratings.avg }} ({{ ratings.count }})
+            </div>
         </section>
 
+        <!-- ingredients -->
         <section
             class="max-w-7xl mx-auto mt-6 bg-white overflow-hidden shadow-md sm:rounded-lg pt-4 pb-4 sm:px-6 lg:px-8">
             <h3>Zutaten</h3>
@@ -81,6 +90,7 @@ const submitCreateForm = () => {
             </ul>
         </section>
 
+        <!-- Steps -->
         <section
             class="max-w-7xl mx-auto mt-6 bg-white overflow-hidden shadow-md sm:rounded-lg pt-4 pb-4 sm:px-6 lg:px-8">
             <h3>Schritte</h3>
@@ -92,6 +102,7 @@ const submitCreateForm = () => {
             </ul>
         </section>
 
+        <!-- comments -->
         <section
             class="max-w-7xl mx-auto mt-6 bg-white overflow-hidden shadow-md sm:rounded-lg pt-4 pb-4 sm:px-6 lg:px-8">
             <h3>Kommentare</h3>

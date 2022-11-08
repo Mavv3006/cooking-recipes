@@ -2,15 +2,13 @@
 
 namespace App\Policies;
 
-use App\Models\Comment;
+use App\Models\Rating;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
-use Illuminate\Support\Facades\Log;
 
-class CommentPolicy
+class RatingPolicy
 {
     use HandlesAuthorization;
-
 
     /**
      * Determine whether the user can view any models.
@@ -26,11 +24,11 @@ class CommentPolicy
     /**
      * Determine whether the user can view the model.
      *
-     * @param User|null $user
-     * @param Comment $comment
+     * @param User $user
+     * @param Rating $rating
      * @return bool
      */
-    public function view(?User $user, Comment $comment): bool
+    public function view(User $user, Rating $rating): bool
     {
         return true;
     }
@@ -38,10 +36,10 @@ class CommentPolicy
     /**
      * Determine whether the user can create models.
      *
-     * @param User|null $user
+     * @param User $user
      * @return bool
      */
-    public function create(?User $user): bool
+    public function create(User $user): bool
     {
         return true;
     }
@@ -50,49 +48,47 @@ class CommentPolicy
      * Determine whether the user can update the model.
      *
      * @param User $user
-     * @param Comment $comment
+     * @param Rating $rating
      * @return bool
      */
-    public function update(User $user, Comment $comment): bool
+    public function update(User $user, Rating $rating): bool
     {
-        return $comment->user_id === $user->id;
+        return $rating->user_id === $user->id;
     }
 
     /**
      * Determine whether the user can delete the model.
      *
      * @param User $user
-     * @param Comment $comment
+     * @param Rating $rating
      * @return bool
      */
-    public function delete(User $user, Comment $comment): bool
+    public function delete(User $user, Rating $rating): bool
     {
-        Log::info('Trying to delete comment ' . $comment->id);
-        Log::debug('comment user id: ' . $comment->user_id . ". user id: " . $user->id);
-        return $comment->user_id === $user->id;
+        return $rating->user_id === $user->id;
     }
 
     /**
      * Determine whether the user can restore the model.
      *
      * @param User $user
-     * @param Comment $comment
+     * @param Rating $rating
      * @return bool
      */
-    public function restore(User $user, Comment $comment): bool
+    public function restore(User $user, Rating $rating): bool
     {
-        return $comment->user_id === $user->id;
+        return $rating->user_id === $user->id;
     }
 
     /**
      * Determine whether the user can permanently delete the model.
      *
      * @param User $user
-     * @param Comment $comment
+     * @param Rating $rating
      * @return bool
      */
-    public function forceDelete(User $user, Comment $comment): bool
+    public function forceDelete(User $user, Rating $rating): bool
     {
-        return $comment->user_id === $user->id;
+        return $rating->user_id === $user->id;
     }
 }
