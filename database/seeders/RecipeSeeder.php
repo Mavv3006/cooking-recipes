@@ -7,6 +7,9 @@ use App\Models\Ingredient;
 use App\Models\Rating;
 use App\Models\Recipe;
 use App\Models\RecipeSteps;
+use App\Models\RecipeTimes;
+use App\Models\Times;
+use App\Models\TimesUnit;
 use App\Models\User;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\Sequence;
@@ -41,18 +44,28 @@ class RecipeSeeder extends Seeder
                 ->state(new Sequence(
                     fn($sequence) => ['user_id' => User::all()->random(1)->first()->id]
                 ))
-                ->create([
-                    'recipe_id' => $recipe->id
-                ]);
-            $users = User::all()->random(5);
+                ->create(['recipe_id' => $recipe->id]);
+
+            $rating_count = 5;
+            $users = User::all()->random($rating_count);
             Rating::factory()
-                ->count(5)
+                ->count($rating_count)
                 ->state(new Sequence(
                     fn($sequence) => ['user_id' => $users[$sequence->index]]
                 ))
-                ->create([
-                    'recipe_id' => $recipe->id
-                ]);
+                ->create(['recipe_id' => $recipe->id]);
+
+            $times_count = 3;
+            $times = Times::all()->random($times_count);
+            RecipeTimes::factory()
+                ->count($times_count)
+                ->state(new Sequence(
+                    fn($sequence) => ['times_id' => $times[$sequence->index]]
+                ))
+                ->state(new Sequence(
+                    fn($sequence) => ['times_unit_id' => TimesUnit::all()->random(1)->first()->id]
+                ))
+                ->create(['recipe_id' => $recipe->id]);
         }
     }
 }
