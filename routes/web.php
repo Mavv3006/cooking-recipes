@@ -4,6 +4,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\FavoritesController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\RecipeController;
+use App\Http\Controllers\TimesController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -28,18 +29,6 @@ Route::get('/', function () {
     ]);
 })->name('index');
 
-Route::prefix('recipes')->group(function () {
-    Route::get('', [RecipeController::class, 'index'])->name('recipes.index');
-    Route::resource('', RecipeController::class)
-        ->only('create', 'store')
-        ->names(['create' => 'recipes.create', 'store' => 'recipes.store'])
-        ->middleware(['auth:sanctum', config('jetstream.auth_session')]);
-    Route::get('/{recipe}', [RecipeController::class, 'show'])->name('recipes.show');
-    Route::post('/{recipe}/favorite', [FavoritesController::class, 'store'])
-        ->middleware(['auth:sanctum', config('jetstream.auth_session')])
-        ->name('favorites.store');
-});
-
 Route::prefix('comments')
     ->middleware(['auth:sanctum', config('jetstream.auth_session')])
     ->group(function () {
@@ -59,6 +48,23 @@ Route::prefix('ratings')
         Route::delete('/{rating}', [RatingController::class, 'destroy'])
             ->name('ratings.delete');
     });
+
+Route::prefix('recipes')->group(function () {
+    Route::get('', [RecipeController::class, 'index'])->name('recipes.index');
+    Route::resource('', RecipeController::class)
+        ->only('create', 'store')
+        ->names(['create' => 'recipes.create', 'store' => 'recipes.store'])
+        ->middleware(['auth:sanctum', config('jetstream.auth_session')]);
+    Route::get('/{recipe}', [RecipeController::class, 'show'])->name('recipes.show');
+    Route::post('/{recipe}/favorite', [FavoritesController::class, 'store'])
+        ->middleware(['auth:sanctum', config('jetstream.auth_session')])
+        ->name('favorites.store');
+});
+
+Route::prefix('times')->group(function () {
+    Route::get('', [TimesController::class, 'index'])->name('times.index');
+});
+
 
 Route::get('user/profile/favorites', [FavoritesController::class, 'index'])
     ->middleware(['auth:sanctum', config('jetstream.auth_session')])
