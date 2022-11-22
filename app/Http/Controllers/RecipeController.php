@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Ingredient;
 use App\Models\Recipe;
 use App\Models\RecipeIngredient;
+use App\Models\RecipeTimes;
+use App\Models\Times;
+use App\Models\TimesUnit;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -39,7 +42,9 @@ class RecipeController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Recipes/Create');
+        $times = Times::select('id', 'name')->get();
+        $uoms = TimesUnit::select('id', 'short', 'long')->get();
+        return Inertia::render('Recipes/Create', ['times' => $times, 'uoms' => $uoms]);
     }
 
     /**
@@ -67,12 +72,19 @@ class RecipeController extends Controller
             'steps' => 'required|array|min:1',
             'steps.*.description' => 'required|string',
             'difficulty' => ['required', Rule::in(['easy', 'normal', 'hard'])],
+            'times' => 'array:id,uom_id,duration',
+            'times.*.id' => 'integer|min:0',
+            'times.*.uom_id' => 'integer|min:0',
+            'times.*.duration' => 'numeric|min:0',
         ]);
 
         DB::beginTransaction();
         $recipe = $this->createRecipe($request, $validator);
         $this->createRecipeSteps($validator, $recipe);
         $this->createRecipeIngredients($validator, $recipe);
+        if (sizeof($validator->validated()['times']) > 0) {
+            $this->createRecipeTimes($validator, $recipe);
+        }
         DB::commit();
 
         return redirect()->route('recipes.show', ['recipe' => $recipe->id]);
@@ -132,7 +144,6 @@ class RecipeController extends Controller
             'time' => fn($query) => $query->select('id', 'name'),
             'timesUnit' => fn($query) => $query->select('id', 'short', 'long')
         ])->get();
-        Log::debug($times);
 
         // return object
         $props = [
@@ -200,7 +211,7 @@ class RecipeController extends Controller
         \Illuminate\Contracts\Validation\Validator|\Illuminate\Validation\Validator $validator
     ): mixed {
         Log::debug('Rezept anlegen');
-        $recipe = $request->user()->recipes()->create($validator->validate());
+        $recipe = $request->user()->recipes()->create($validator->validated());
         Log::info('Recipe created: ' . $recipe->id);
         return $recipe;
     }
@@ -228,5 +239,24 @@ class RecipeController extends Controller
             Log::debug('Recipe Ingredient for recipe ' . $created_recipe_ingredient->recipe_id . ' and ingredient ' . $created_recipe_ingredient->ingredient_id . ' created.');
         }
         Log::info('all recipe ingredients created');
+    }
+
+    public function createRecipeTimes(
+        \Illuminate\Contracts\Validation\Validator|\Illuminate\Validation\Validator $validator,
+        mixed $recipe
+    ): void {
+        Log::debug('Zeiten anlegen');
+        $request_times = $validator->safe()->only('times')['times'];
+        Log::debug('times: ' . json_encode($request_times));
+        foreach ($request_times as $time) {
+            $recipe_time = RecipeTimes::create([
+                'recipe_id' => $recipe->id,
+                'times_id' => $time['id'],
+                'times_unit_id' => $time['uom_id'],
+                'duration' => $time['duration']
+            ]);
+            Log::debug('Recipe time for recipe ' . $recipe_time->recipe_id . ' and time ' . $recipe_time->times_id . ' with duration ' . $recipe_time->duration . ' created.');
+        }
+        Log::info('all recipe times created');
     }
 }
