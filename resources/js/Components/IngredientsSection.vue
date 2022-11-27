@@ -1,5 +1,6 @@
 <script setup>
-import TextInput from "@/Components/TextInput.vue";
+// import TextInput from "@/Components/TextInput.vue";
+import SectionHeading from "@/Components/SectionHeading.vue";
 
 const props = defineProps({
     ingredients: Array
@@ -7,18 +8,18 @@ const props = defineProps({
 </script>
 
 <template>
-    <div>Zutaten</div>
+    <SectionHeading>Zutaten</SectionHeading>
 
-    <div>
-        <button>
-            <i class="fa-solid fa-minus"></i>
-        </button>
-        <TextInput></TextInput>
-        <button>
-            <i class="fa-solid fa-plus"></i>
-        </button>
-        <span>Portionen</span>
-    </div>
+    <!--    <div>-->
+    <!--        <button>-->
+    <!--            <i class="fa-solid fa-minus"></i>-->
+    <!--        </button>-->
+    <!--        <TextInput></TextInput>-->
+    <!--        <button>-->
+    <!--            <i class="fa-solid fa-plus"></i>-->
+    <!--        </button>-->
+    <!--        <span>Portionen</span>-->
+    <!--    </div>-->
 
     <table>
         <thead>

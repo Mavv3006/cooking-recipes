@@ -24,15 +24,8 @@ const toggleFavorite = () => {
 }
 </script>
 
-
 <template>
     <AppLayout title="Detailsansicht">
-        <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ recipe.title }}
-            </h2>
-        </template>
-
         <MetaData
             :is_favorite="is_favorite"
             :description="recipe.description"

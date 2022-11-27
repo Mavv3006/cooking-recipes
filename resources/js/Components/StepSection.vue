@@ -1,4 +1,6 @@
 <script setup>
+import SectionHeading from "@/Components/SectionHeading.vue";
+
 const props = defineProps({
     steps: Array
 });
@@ -6,7 +8,7 @@ const props = defineProps({
 </script>
 
 <template>
-    <div>Zubereitung</div>
+    <SectionHeading>Zubereitung</SectionHeading>
 
     <div v-for="(step, index) in steps">
         <div>{{ index }}</div>

@@ -1,5 +1,6 @@
 <script setup>
 import dayjs from 'dayjs';
+import {computed} from "vue";
 
 const props = defineProps({
     description: String,
@@ -11,6 +12,10 @@ const props = defineProps({
 })
 const emit = defineEmits(['toggleFavorite'])
 
+const ratingPercentage = computed(() => {
+    return (props.ratings.avg / props.ratings.count).toFixed(3) * 100;
+})
+
 </script>
 
 <template>
@@ -21,7 +26,22 @@ const emit = defineEmits(['toggleFavorite'])
         <i v-else class="fa-regular fa-heart"></i>
     </button>
 
-    <div>Bewertung: {{ ratings.avg }} ({{ ratings.count }})</div>
+    <div class="flex items-center space-x-2">
+        <div class="relative w-[90px] h-4">
+            <div class="absolute text-[#e7711b] overflow-hidden z-[1] top-0 left-0"
+                 :style="{ width: ratingPercentage + '%' }">
+                <div class="flex">
+                    <i class="fa-solid fa-star" v-for="n in 5"></i>
+                </div>
+            </div>
+            <div class="absolute text-[#c5c5c5] z-[0]">
+                <div class="flex">
+                    <i class="fa-solid fa-star" v-for="n in 5"></i>
+                </div>
+            </div>
+        </div>
+        <div>({{ ratings.count }})</div>
+    </div>
 
     <div>{{ description }}</div>
 

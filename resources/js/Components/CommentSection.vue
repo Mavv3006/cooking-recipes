@@ -4,6 +4,7 @@ import {useForm} from "@inertiajs/inertia-vue3";
 import InputError from '@/Components/InputError.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import Comment from "@/Components/Comment.vue";
+import SectionHeading from "@/Components/SectionHeading.vue";
 
 const props = defineProps({comments: Array, recipeId: Number});
 
@@ -24,7 +25,7 @@ const submitCreateForm = () => {
 </script>
 
 <template>
-    <h3>Kommentare</h3>
+    <SectionHeading>Kommentare</SectionHeading>
 
     <div class="flex justify-center">
         <button
