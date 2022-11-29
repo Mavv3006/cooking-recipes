@@ -3,6 +3,7 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import {ref} from "vue";
 import TextInput from "@/Components/TextInput.vue";
 import {useForm} from "@inertiajs/inertia-vue3";
+import TimesTableRow from "@/Components/TimesTableRow.vue";
 
 const props = defineProps({
     times: Array,
@@ -14,7 +15,6 @@ const addTimeForm = useForm({
 })
 
 const isAddingTimes = ref(false);
-const isAddingTimeUnits = ref(false);
 
 const addTime = (event) => {
     if (event) event.preventDefault();
@@ -25,15 +25,6 @@ const addTime = (event) => {
         }
     });
 }
-
-const deleteTime = (time) => {
-    console.info('deleting time: ' + time);
-    useForm({_method: 'DELETE'}).delete(route('times.delete', {'time': time}));
-};
-
-// const addTimeUnit = () => {
-//     isAddingTimeUnits.value = !isAddingTimeUnits.value;
-// }
 
 </script>
 
@@ -59,15 +50,7 @@ const deleteTime = (time) => {
                     </tr>
                     </thead>
                     <tbody class="text-center">
-                    <tr v-for="time in times">
-                        <td>{{ time.id }}</td>
-                        <td>{{ time.name }}</td>
-                        <td class="space-x-2">
-                            <i class="fa-regular fa-pen-to-square hover:cursor-pointer"></i>
-                            <i class="fa-solid fa-trash text-red-700 hover:cursor-pointer"
-                               @click="deleteTime(time.id)"></i>
-                        </td>
-                    </tr>
+                    <TimesTableRow v-for="time in times" :time="time"/>
                     <tr>
                         <td colspan="3"
                             @click="isAddingTimes=true"

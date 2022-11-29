@@ -37,6 +37,18 @@ class TimesController extends Controller
         return back();
     }
 
+    public function update(Request $request, Times $time): RedirectResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+        ]);
+
+        $time->update($validator->validated());
+        Log::info('Updated time', ['time' => $time->id]);
+
+        return back();
+    }
+
     public function destroy(Times $time): RedirectResponse
     {
         $time->delete();

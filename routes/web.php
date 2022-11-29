@@ -58,11 +58,14 @@ Route::prefix('recipes')->group(function () {
 });
 
 Route::resource('times', TimesController::class)
-    ->only('index', 'store', 'destroy')
-    ->parameters(['times' => 'time'])
-    ->names(['index' => 'times.index', 'store' => 'times.store', 'destroy' => 'times.delete'])
+    ->only('index', 'store', 'destroy', 'update')
+    ->names([
+        'index' => 'times.index',
+        'store' => 'times.store',
+        'destroy' => 'times.delete',
+        'update' => 'times.update'
+    ])
     ->middleware(['auth:sanctum', config('jetstream.auth_session')]);
-
 
 Route::get('user/profile/favorites', [FavoritesController::class, 'index'])
     ->middleware(['auth:sanctum', config('jetstream.auth_session')])
