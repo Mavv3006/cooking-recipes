@@ -59,4 +59,9 @@ class Recipe extends Model
     {
         return $this->hasMany(Rating::class);
     }
+
+    public function recipeTimes(): HasMany
+    {
+        return $this->hasMany(RecipeTimes::class);
+    }
 }

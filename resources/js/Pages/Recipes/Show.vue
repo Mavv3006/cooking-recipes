@@ -20,7 +20,8 @@ const props = defineProps({
     test: Object,
     is_logged_in: Boolean,
     comments: Array,
-    ratings: Object
+    ratings: Object,
+    times: Object
 });
 
 const favoriteForm = useForm({
@@ -72,9 +73,21 @@ const submitCreateForm = () => {
             class="bg-white max-w-7xl mx-auto sm:px-6 lg:px-8 overflow-hidden shadow-md sm:rounded-lg pt-4 pb-4 mt-12">
             <p>{{ recipe.description }}</p>
             <p>Erstellt {{ recipe.created_at }} von {{ user.name }}</p>
-            <RatingForm class="mt-2" :recipe_id="recipe.id"/>
+            <div class="mt-2">
+                <RatingForm :recipe_id="recipe.id"/>
+            </div>
             <div class="mt-3">
                 Bewertung: {{ ratings.avg }} ({{ ratings.count }})
+            </div>
+            <div class="mt-2">
+                Zeiten:
+                <div class="flex space-x-4">
+                    <span v-for="time in times" class="bg-gray-100 px-3 py-1 rounded-full hover:bg-gray-200">
+                       {{ time.time.name }}: {{
+                            time.duration
+                        }} {{ time.duration > 1 ? time.times_unit.long + 'n' : time.times_unit.long }}
+                    </span>
+                </div>
             </div>
         </section>
 
