@@ -16,7 +16,8 @@ const props = defineProps({
     test: Object,
     is_logged_in: Boolean, // TODO: refactor using camelCase
     comments: Array,
-    ratings: Object
+    ratings: Object,
+    times: Object
 });
 
 const toggleFavorite = () => {
@@ -36,6 +37,27 @@ const toggleFavorite = () => {
             @toggle-favorite="toggleFavorite"/>
 
         <hr>
+
+        <!-- Meta data-->
+        <section
+            class="bg-white max-w-7xl mx-auto sm:px-6 lg:px-8 overflow-hidden shadow-md sm:rounded-lg pt-4 pb-4 mt-12">
+            
+            <div class="mt-2">
+                <RatingForm :recipe_id="recipe.id"/>
+            </div>
+            
+            <div class="mt-2">
+                Zeiten:
+                <div class="flex space-x-4">
+                    <span v-for="time in times" class="bg-gray-100 px-3 py-1 rounded-full hover:bg-gray-200">
+                       {{ time.time.name }}: {{
+                            time.duration
+                        }} {{ time.duration > 1 ? time.times_unit.long + 'n' : time.times_unit.long }}
+                    </span>
+                </div>
+            </div>
+        </section>
+
 
         <IngredientsSection :ingredients="ingredients"/>
 

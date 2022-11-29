@@ -54,6 +54,10 @@ const logout = () => {
                                          v-if="$page.props.auth.user">
                                     Favoriten
                                 </NavLink>
+                                <NavLink :href="route('times.index')" :active="route().current('times.index')"
+                                         v-if="$page.props.auth.user">
+                                    Zeiten
+                                </NavLink>
                             </div>
                         </div>
 
@@ -148,6 +152,14 @@ const logout = () => {
                         <ResponsiveNavLink :href="route('recipes.create')" :active="route().current('recipes.create')"
                                            v-if="$page.props.auth.user">
                             Rezept erstellen
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('user.favorites')" :active="route().current('user.favorites')"
+                                           v-if="$page.props.auth.user">
+                            Favoriten
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('times.index')" :active="route().current('times.index')"
+                                           v-if="$page.props.auth.user">
+                            Zeiten
                         </ResponsiveNavLink>
                     </div>
 

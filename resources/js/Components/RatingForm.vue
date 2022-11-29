@@ -40,8 +40,10 @@ const submitForm = () => {
             <NumberInput
                 id="stars"
                 v-model.number="form.stars"
-                type="number"
                 placeholder="z.B.: 1"
+                min="1"
+                max="5"
+                step="1"
             />
             <InputError :message="form.errors.stars"/>
             <PrimaryButton :disables="form.processing" class="ml-4">

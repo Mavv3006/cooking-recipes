@@ -4,8 +4,21 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
 import {useForm} from "@inertiajs/inertia-vue3";
 import InputLabel from "@/Components/InputLabel.vue";
 import TextInput from "@/Components/TextInput.vue";
+import NumberInput from "@/Components/NumberInput.vue";
 import InputError from "@/Components/InputError.vue";
 import Textarea from "@/Components/Textarea.vue";
+import {ref} from "vue";
+
+const props = defineProps({
+    times: Array,
+    uoms: Array
+});
+
+const timesFormArray = ref([]);
+
+props.times.forEach((value) => {
+    timesFormArray.value.push({id: value.id, uom_id: 1, duration: 0})
+});
 
 const form = useForm({
     _method: 'POST',
@@ -14,9 +27,13 @@ const form = useForm({
     steps: [{description: ''}],
     ingredients: [{description: ''}],
     difficulty: '',
+    times: null
 });
 
+
 const submitForm = () => {
+    form.times = timesFormArray.value.filter((value) => value.duration > 0);
+    console.log(form.data());
     form.post(route('recipes.store'), {onSuccess: () => form.reset()});
 }
 
@@ -51,76 +68,122 @@ const removeIngredient = (index, event) => {
         </template>
 
         <form @submit.prevent="submitForm" class="py-12">
+
             <section
                 class="bg-white max-w-7xl mx-auto sm:px-6 lg:px-8 overflow-hidden shadow-xl sm:rounded-lg pt-4 pb-4">
-                Metadaten über das Rezept
-                <div class="flex flex-col mt-4 space-y-4">
-                    <div>
-                        <!-- Titel -->
-                        <InputLabel for="title">Titel des Rezepts</InputLabel>
-                        <TextInput
-                            id="title"
-                            v-model="form.title"
-                            type="text"
-                            class="w-full"
-                            placeholder="z.B.: Gefüllte Tomaten"
-                        />
-                        <InputError :message="form.errors.title"/>
+                <div class="flex space-x-16">
+                    <div class="flex flex-col  space-y-4 flex-1">
+                        Metadaten über das Rezept
+                        <div class="mt-4">
+                            <!-- Titel -->
+                            <InputLabel for="title">Titel des Rezepts</InputLabel>
+                            <TextInput
+                                id="title"
+                                v-model="form.title"
+                                type="text"
+                                class="w-full"
+                                placeholder="z.B.: Gefüllte Tomaten"
+                            />
+                            <InputError :message="form.errors.title"/>
+                        </div>
+                        <div>
+                            <!-- Beschreibung -->
+                            <InputLabel for="description">Beschreibung des Rezepts</InputLabel>
+                            <TextInput
+                                id="description"
+                                v-model="form.description"
+                                type="text"
+                                class="w-full"
+                                placeholder="z.B.: ein leckeres Abendessen."
+                            />
+                            <InputError :message="form.errors.description"/>
+                        </div>
+
+                        <div>
+                            <p class="text-sm mt-4 mb-2">
+                                Schwierigkeit
+                            </p>
+                            <div class="flex space-x-4">
+                                <div class="flex space-x-2">
+                                    <input
+                                        type="radio"
+                                        class="rounded-full border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                                        name="difficulty"
+                                        id="easy"
+                                        value="easy"
+                                        v-model="form.difficulty"
+                                    >
+                                    <InputLabel for="easy">Einfach</InputLabel>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <input
+                                        type="radio"
+                                        class="rounded-full border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                                        name="difficulty"
+                                        id="normal"
+                                        value="normal"
+                                        v-model="form.difficulty"
+                                    >
+                                    <InputLabel for="normal">Mittel</InputLabel>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <input
+                                        type="radio"
+                                        class="rounded-full border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                                        name="difficulty"
+                                        id="hard"
+                                        value="hard"
+                                        v-model="form.difficulty"
+                                    >
+                                    <InputLabel for="hard">Schwer</InputLabel>
+                                </div>
+                            </div>
+                            <InputError :message="form.errors.difficulty"/>
+                        </div>
                     </div>
-                    <div>
-                        <!-- Beschreibung -->
-                        <InputLabel for="description">Beschreibung des Rezepts</InputLabel>
-                        <TextInput
-                            id="description"
-                            v-model="form.description"
-                            type="text"
-                            class="w-full"
-                            placeholder="z.B.: ein leckeres Abendessen."
-                        />
-                        <InputError :message="form.errors.description"/>
+
+                    <div class="flex-1">
+                        Zeiten
+                        <div class="flex flex-col mt-4 space-y-2">
+                            <div v-for="time in times">
+                                {{ time.name }}
+                                <div class="flex space-x-4">
+                                    <template
+                                        v-for="scope in [{form_time: timesFormArray.find((value) => value.id === time.id)}]">
+                                        <div>
+                                            <InputLabel
+                                                :for="`time-duration-${scope.form_time.id }`">
+                                                Dauer
+                                            </InputLabel>
+                                            <NumberInput
+                                                step="any"
+                                                min="0"
+                                                :id="`time-duration-${scope.form_time.id }`"
+                                                v-model.number="scope.form_time.duration"
+                                            ></NumberInput>
+                                        </div>
+                                        <div>
+                                            <InputLabel
+                                                :for="`time-uom-${scope.form_time.id}`">
+                                                Einheit
+                                            </InputLabel>
+                                            <select
+                                                class="border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm"
+                                                :id="`time-uom-${scope.form_time.id}`"
+                                                required
+                                                v-model="scope.form_time.uom_id">
+                                                <option
+                                                    v-for="uom in uoms" :value="uom.id"
+                                                >{{ uom.long }}(n)
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-
-                <p class="text-sm mt-4 mb-2">
-                    Schwierigkeit
-                </p>
-                <div class="flex space-x-4">
-                    <div class="flex space-x-2">
-                        <input
-                            type="radio"
-                            class="rounded-full border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                            name="difficulty"
-                            id="easy"
-                            value="easy"
-                            v-model="form.difficulty"
-                        >
-                        <InputLabel for="easy">Einfach</InputLabel>
-                    </div>
-                    <div class="flex space-x-2">
-                        <input
-                            type="radio"
-                            class="rounded-full border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                            name="difficulty"
-                            id="normal"
-                            value="normal"
-                            v-model="form.difficulty"
-                        >
-                        <InputLabel for="normal">Mittel</InputLabel>
-                    </div>
-                    <div class="flex space-x-2">
-                        <input
-                            type="radio"
-                            class="rounded-full border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                            name="difficulty"
-                            id="hard"
-                            value="hard"
-                            v-model="form.difficulty"
-                        >
-                        <InputLabel for="hard">Schwer</InputLabel>
-                    </div>
-                </div>
-                <InputError :message="form.errors.difficulty"/>
-
                 <!-- Tags (Zukunft) -->
             </section>
 
@@ -193,6 +256,9 @@ const removeIngredient = (index, event) => {
                 <PrimaryButton :disables="form.processing">
                     Speichern
                 </PrimaryButton>
+                <div>
+                    {{ form.errors }}
+                </div>
             </div>
         </form>
     </AppLayout>

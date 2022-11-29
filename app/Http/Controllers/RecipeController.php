@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Ingredient;
 use App\Models\Recipe;
 use App\Models\RecipeIngredient;
+use App\Models\RecipeTimes;
+use App\Models\Times;
+use App\Models\TimesUnit;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,11 +22,6 @@ use Inertia\Response;
 
 class RecipeController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return Response
-     */
     public function index(): Response
     {
         $recipes = Recipe::with(['user' => fn($query) => $query->select('id', 'name')])
@@ -32,22 +30,13 @@ class RecipeController extends Controller
         return Inertia::render('Recipes/Index', ['recipes' => $recipes]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return Response
-     */
     public function create(): Response
     {
-        return Inertia::render('Recipes/Create');
+        $times = Times::select('id', 'name')->get();
+        $uoms = TimesUnit::select('id', 'short', 'long')->get();
+        return Inertia::render('Recipes/Create', ['times' => $times, 'uoms' => $uoms]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param Request $request
-     * @return Application|Redirector|RedirectResponse
-     */
     public function store(Request $request): Application|RedirectResponse|Redirector
     {
         $validator = Validator::make($request->all(), [
@@ -67,23 +56,24 @@ class RecipeController extends Controller
             'steps' => 'required|array|min:1',
             'steps.*.description' => 'required|string',
             'difficulty' => ['required', Rule::in(['easy', 'normal', 'hard'])],
+            'times' => 'array:id,uom_id,duration',
+            'times.*.id' => 'integer|min:0',
+            'times.*.uom_id' => 'integer|min:0',
+            'times.*.duration' => 'numeric|min:0',
         ]);
 
         DB::beginTransaction();
         $recipe = $this->createRecipe($request, $validator);
         $this->createRecipeSteps($validator, $recipe);
         $this->createRecipeIngredients($validator, $recipe);
+        if (sizeof($validator->validated()['times']) > 0) {
+            $this->createRecipeTimes($validator, $recipe);
+        }
         DB::commit();
 
         return redirect()->route('recipes.show', ['recipe' => $recipe->id]);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param Recipe $recipe
-     * @return Response
-     */
     public function show(Recipe $recipe): Response
     {
         // Ingredients for this recipe
@@ -127,6 +117,12 @@ class RecipeController extends Controller
                 'avg' => $collection->avg('stars')
             ]);
 
+        // times
+        $times = $recipe->recipeTimes()->with([
+            'time' => fn($query) => $query->select('id', 'name'),
+            'timesUnit' => fn($query) => $query->select('id', 'short', 'long')
+        ])->get();
+
         // return object
         $props = [
             'recipe' => $recipe,
@@ -136,7 +132,8 @@ class RecipeController extends Controller
             'is_favorite' => $is_favorite,
             'is_logged_in' => $is_logged_in,
             'comments' => $comments,
-            'ratings' => $ratings
+            'ratings' => $ratings,
+            'times' => $times,
         ];
 
         return Inertia::render('Recipes/Show', $props);
@@ -145,7 +142,7 @@ class RecipeController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param Recipe $recipe
+     * @param  Recipe  $recipe
      * @return Response
      */
     public function edit(Recipe $recipe)
@@ -156,8 +153,8 @@ class RecipeController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param Request $request
-     * @param Recipe $recipe
+     * @param  Request  $request
+     * @param  Recipe  $recipe
      * @return Response
      */
     public function update(Request $request, Recipe $recipe)
@@ -168,7 +165,7 @@ class RecipeController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param Recipe $recipe
+     * @param  Recipe  $recipe
      * @return Response
      */
     public function destroy(Recipe $recipe)
@@ -178,9 +175,8 @@ class RecipeController extends Controller
 
     private function createRecipeSteps(
         \Illuminate\Contracts\Validation\Validator|\Illuminate\Validation\Validator $validator,
-                                                                                    $recipe
-    ): void
-    {
+        $recipe
+    ): void {
         Log::debug('Zubereitungsschritte anlegen');
         $steps = $validator->safe()->only(['steps'])['steps'];
         Log::debug('steps: ' . json_encode($steps));
@@ -189,21 +185,19 @@ class RecipeController extends Controller
     }
 
     private function createRecipe(
-        Request                                                                     $request,
+        Request $request,
         \Illuminate\Contracts\Validation\Validator|\Illuminate\Validation\Validator $validator
-    ): mixed
-    {
+    ): mixed {
         Log::debug('Rezept anlegen');
-        $recipe = $request->user()->recipes()->create($validator->validate());
+        $recipe = $request->user()->recipes()->create($validator->validated());
         Log::info('Recipe created: ' . $recipe->id);
         return $recipe;
     }
 
     private function createRecipeIngredients(
         \Illuminate\Contracts\Validation\Validator|\Illuminate\Validation\Validator $validator,
-        mixed                                                                       $recipe
-    ): void
-    {
+        mixed $recipe
+    ): void {
         Log::debug('Zutaten anlegen');
         $request_ingredients = $validator->safe()->only('ingredients')['ingredients'];
         Log::debug('ingredients: ' . json_encode($request_ingredients));
@@ -223,5 +217,24 @@ class RecipeController extends Controller
             Log::debug('Recipe Ingredient for recipe ' . $created_recipe_ingredient->recipe_id . ' and ingredient ' . $created_recipe_ingredient->ingredient_id . ' created.');
         }
         Log::info('all recipe ingredients created');
+    }
+
+    public function createRecipeTimes(
+        \Illuminate\Contracts\Validation\Validator|\Illuminate\Validation\Validator $validator,
+        mixed $recipe
+    ): void {
+        Log::debug('Zeiten anlegen');
+        $request_times = $validator->safe()->only('times')['times'];
+        Log::debug('times: ' . json_encode($request_times));
+        foreach ($request_times as $time) {
+            $recipe_time = RecipeTimes::create([
+                'recipe_id' => $recipe->id,
+                'times_id' => $time['id'],
+                'times_unit_id' => $time['uom_id'],
+                'duration' => $time['duration']
+            ]);
+            Log::debug('Recipe time for recipe ' . $recipe_time->recipe_id . ' and time ' . $recipe_time->times_id . ' with duration ' . $recipe_time->duration . ' created.');
+        }
+        Log::info('all recipe times created');
     }
 }
