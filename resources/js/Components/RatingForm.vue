@@ -31,7 +31,7 @@ const submitForm = () => {
     <button
         v-if="is_rating === false"
         @click="is_rating = true"
-        class="inline-flex items-center mt-2 px-3 py-1 bg-gray-200 border border-transparent rounded-md hover:bg-gray-100 active:bg-gray-300 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25 transition">
+        class="inline-flex items-center px-3 py-1 bg-gray-200 border border-transparent rounded-md hover:bg-gray-100 active:bg-gray-300 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25 transition">
         Bewerten
     </button>
     <div class="flex content-center">

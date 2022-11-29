@@ -118,10 +118,17 @@ class RecipeController extends Controller
             ]);
 
         // times
-        $times = $recipe->recipeTimes()->with([
-            'time' => fn($query) => $query->select('id', 'name'),
-            'timesUnit' => fn($query) => $query->select('id', 'short', 'long')
-        ])->get();
+        $times = $recipe->recipeTimes()
+            ->with([
+                'time' => fn($query) => $query->select('id', 'name'),
+                'timesUnit' => fn($query) => $query->select('id', 'short', 'long')
+            ])
+            ->get()
+            ->filter(function ($value) {
+                return $value['time'] != null;
+            });
+
+        Log::debug(json_encode($times));
 
         // return object
         $props = [
