@@ -26,6 +26,11 @@ const addTime = (event) => {
     });
 }
 
+const deleteTime = (time) => {
+    console.info('deleting time: ' + time);
+    useForm({_method: 'DELETE'}).delete(route('times.delete', {'time': time}));
+};
+
 // const addTimeUnit = () => {
 //     isAddingTimeUnits.value = !isAddingTimeUnits.value;
 // }
@@ -58,8 +63,9 @@ const addTime = (event) => {
                         <td>{{ time.id }}</td>
                         <td>{{ time.name }}</td>
                         <td class="space-x-2">
-                            <i class="fa-regular fa-pen-to-square"></i>
-                            <i class="fa-solid fa-trash text-red-700"></i>
+                            <i class="fa-regular fa-pen-to-square hover:cursor-pointer"></i>
+                            <i class="fa-solid fa-trash text-red-700 hover:cursor-pointer"
+                               @click="deleteTime(time.id)"></i>
                         </td>
                     </tr>
                     <tr>
