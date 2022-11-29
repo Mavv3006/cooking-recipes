@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Times;
 use App\Models\TimesUnit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 
 class TimesController extends Controller
@@ -18,5 +20,21 @@ class TimesController extends Controller
 
         $props = ['times' => $times, 'timeUnits' => $timeUnits];
         return Inertia::render('Times/Index', $props);
+    }
+
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+        ]);
+
+        $time = Times::create($validator->validated());
+
+        return back();
+    }
+
+    public function destroy(Times $time)
+    {
+
     }
 }

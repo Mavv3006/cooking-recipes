@@ -22,11 +22,6 @@ use Inertia\Response;
 
 class RecipeController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return Response
-     */
     public function index(): Response
     {
         $recipes = Recipe::with(['user' => fn($query) => $query->select('id', 'name')])
@@ -35,11 +30,6 @@ class RecipeController extends Controller
         return Inertia::render('Recipes/Index', ['recipes' => $recipes]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return Response
-     */
     public function create(): Response
     {
         $times = Times::select('id', 'name')->get();
@@ -47,12 +37,6 @@ class RecipeController extends Controller
         return Inertia::render('Recipes/Create', ['times' => $times, 'uoms' => $uoms]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  Request  $request
-     * @return Application|Redirector|RedirectResponse
-     */
     public function store(Request $request): Application|RedirectResponse|Redirector
     {
         $validator = Validator::make($request->all(), [
@@ -90,12 +74,6 @@ class RecipeController extends Controller
         return redirect()->route('recipes.show', ['recipe' => $recipe->id]);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  Recipe  $recipe
-     * @return Response
-     */
     public function show(Recipe $recipe): Response
     {
         // Ingredients for this recipe

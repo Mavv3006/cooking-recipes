@@ -5,9 +5,7 @@ use App\Http\Controllers\FavoritesController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\RecipeController;
 use App\Http\Controllers\TimesController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,12 +19,7 @@ use Inertia\Inertia;
 */
 
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
+    return redirect(\route('recipes.index'));
 })->name('index');
 
 Route::prefix('comments')
@@ -50,10 +43,13 @@ Route::prefix('ratings')
     });
 
 Route::prefix('recipes')->group(function () {
-    Route::get('', [RecipeController::class, 'index'])->name('recipes.index');
     Route::resource('', RecipeController::class)
-        ->only('create', 'store')
-        ->names(['create' => 'recipes.create', 'store' => 'recipes.store'])
+        ->only('create', 'store', 'index')
+        ->names([
+            'create' => 'recipes.create',
+            'store' => 'recipes.store',
+            'index' => 'recipes.index'
+        ])
         ->middleware(['auth:sanctum', config('jetstream.auth_session')]);
     Route::get('/{recipe}', [RecipeController::class, 'show'])->name('recipes.show');
     Route::post('/{recipe}/favorite', [FavoritesController::class, 'store'])
@@ -61,9 +57,11 @@ Route::prefix('recipes')->group(function () {
         ->name('favorites.store');
 });
 
-Route::prefix('times')->group(function () {
-    Route::get('', [TimesController::class, 'index'])->name('times.index');
-});
+Route::resource('times', TimesController::class)
+    ->only('index', 'store', 'destroy')
+    ->parameters(['times' => 'time'])
+    ->names(['index' => 'times.index', 'store' => 'times.store', 'destroy' => 'times.delete'])
+    ->middleware(['auth:sanctum', config('jetstream.auth_session')]);
 
 
 Route::get('user/profile/favorites', [FavoritesController::class, 'index'])
