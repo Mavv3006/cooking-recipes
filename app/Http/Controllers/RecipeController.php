@@ -128,8 +128,6 @@ class RecipeController extends Controller
                 return $value['time'] != null;
             });
 
-        Log::debug(json_encode($times));
-
         // return object
         $props = [
             'recipe' => $recipe,
@@ -173,11 +171,13 @@ class RecipeController extends Controller
      * Remove the specified resource from storage.
      *
      * @param  Recipe  $recipe
-     * @return Response
+     * @return RedirectResponse
      */
-    public function destroy(Recipe $recipe)
+    public function destroy(Recipe $recipe): RedirectResponse
     {
-        //
+        $recipe->delete();
+        Log::info('deleted recipe', ['recipe' => $recipe->id]);
+        return redirect()->route('recipes.index');
     }
 
     private function createRecipeSteps(
