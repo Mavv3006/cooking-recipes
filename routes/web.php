@@ -43,7 +43,7 @@ Route::prefix('ratings')
     });
 
 Route::resource('recipes', RecipeController::class)
-    ->only('create', 'store', 'destroy')
+    ->only('create', 'store', 'destroy', 'edit', 'update')
     ->middleware(['auth:sanctum', config('jetstream.auth_session')]);
 
 Route::prefix('recipes')->group(function () {

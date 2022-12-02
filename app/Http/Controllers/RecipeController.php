@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\DataTransferObjects\RatingsDTO;
+use App\DataTransferObjects\RecipeDTO;
 use App\Models\Ingredient;
 use App\Models\Recipe;
 use App\Models\RecipeIngredient;
@@ -9,6 +11,7 @@ use App\Models\RecipeTimes;
 use App\Models\Times;
 use App\Models\TimesUnit;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
@@ -33,7 +36,7 @@ class RecipeController extends Controller
     public function create(): Response
     {
         $times = Times::select('id', 'name')->get();
-        $uoms = TimesUnit::select('id', 'short', 'long')->get();
+        $uoms = $this->getTimeUnitOfMeasures();
         return Inertia::render('Recipes/Create', ['times' => $times, 'uoms' => $uoms]);
     }
 
@@ -76,72 +79,9 @@ class RecipeController extends Controller
 
     public function show(Recipe $recipe): Response
     {
-        // Ingredients for this recipe
-        $ingredients = DB::table('recipes')
-            ->join('recipe_ingredients', 'recipes.id', '=', 'recipe_ingredients.recipe_id')
-            ->join('ingredients', 'recipe_ingredients.ingredient_id', '=', 'ingredients.id')
-            ->where('recipes.id', $recipe->id)
-            ->select(['quantity', 'uom', 'name'])
-            ->get();
+        $props = $this->getRecipeDTO($recipe);
 
-        // Steps in this recipe
-        $steps = $recipe
-            ->steps()
-            ->orderBy('id')
-            ->select('description')
-            ->get();
-
-        // Whether the recipe is a favorite for the logged-in user
-        $is_favorite = null;
-        $is_logged_in = Auth::check();
-        if ($is_logged_in) {
-            $favorite = Auth::user()
-                ->favorites()
-                ->where('id', $recipe->id)
-                ->first();
-            $is_favorite = !($favorite == null);
-        }
-
-        // available comments for this recipe
-        $comments = $recipe->comments()
-            ->with(['user' => fn($query) => $query->select('id', 'name')])
-            ->orderBy('created_at')
-            ->select('comment', 'created_at', 'updated_at', 'user_id', 'id')
-            ->get();
-
-        // available ratings
-        $ratings = $recipe->ratings()
-            ->get()
-            ->pipe(fn($collection) => [
-                'count' => $collection->count('stars'),
-                'avg' => $collection->avg('stars')
-            ]);
-
-        // times
-        $times = $recipe->recipeTimes()
-            ->with([
-                'time' => fn($query) => $query->select('id', 'name'),
-                'timesUnit' => fn($query) => $query->select('id', 'short', 'long')
-            ])
-            ->get()
-            ->filter(function ($value) {
-                return $value['time'] != null;
-            });
-
-        // return object
-        $props = [
-            'recipe' => $recipe,
-            'ingredients' => $ingredients,
-            'steps' => $steps,
-            'user' => $recipe->user()->first(),
-            'is_favorite' => $is_favorite,
-            'is_logged_in' => $is_logged_in,
-            'comments' => $comments,
-            'ratings' => $ratings,
-            'times' => $times,
-        ];
-
-        return Inertia::render('Recipes/Show', $props);
+        return Inertia::render('Recipes/Show', $props->toArray());
     }
 
     /**
@@ -152,7 +92,9 @@ class RecipeController extends Controller
      */
     public function edit(Recipe $recipe)
     {
-        //
+        $props = $this->getRecipeDTO($recipe);
+
+        return Inertia::render('Recipes/Edit', $props->toArray());
     }
 
     /**
@@ -243,5 +185,94 @@ class RecipeController extends Controller
             Log::debug('Recipe time for recipe ' . $recipe_time->recipe_id . ' and time ' . $recipe_time->times_id . ' with duration ' . $recipe_time->duration . ' created.');
         }
         Log::info('all recipe times created');
+    }
+
+    /**
+     * @param  Recipe  $recipe
+     * @return Collection
+     */
+    private function getStepsOfRecipe(Recipe $recipe): Collection
+    {
+        return $recipe
+            ->steps()
+            ->orderBy('id')
+            ->select('description')
+            ->get();
+    }
+
+    /**
+     * @param  Recipe  $recipe
+     * @return \Illuminate\Support\Collection
+     */
+    private function getIngredientsOfRecipe(Recipe $recipe): \Illuminate\Support\Collection
+    {
+        return DB::table('recipes')
+            ->join('recipe_ingredients', 'recipes.id', '=', 'recipe_ingredients.recipe_id')
+            ->join('ingredients', 'recipe_ingredients.ingredient_id', '=', 'ingredients.id')
+            ->where('recipes.id', $recipe->id)
+            ->select(['quantity', 'uom', 'name'])
+            ->get();
+    }
+
+    private function whetherTheRecipeIsAFavoriteForTheLoggedInUser(Recipe $recipe): bool
+    {
+        $is_favorite = null;
+        $is_logged_in = Auth::check();
+        if ($is_logged_in) {
+            $favorite = Auth::user()
+                ->favorites()
+                ->where('id', $recipe->id)
+                ->first();
+            $is_favorite = !($favorite == null);
+        }
+        return $is_favorite ?? false;
+    }
+
+    private function getCommentsOfRecipe(Recipe $recipe): Collection
+    {
+        return $recipe->comments()
+            ->with(['user' => fn($query) => $query->select('id', 'name')])
+            ->orderBy('created_at')
+            ->select('comment', 'created_at', 'updated_at', 'user_id', 'id')
+            ->get();
+    }
+
+    private function getRatingsOfRecipe(Recipe $recipe): RatingsDTO
+    {
+        return $recipe->ratings()
+            ->get()
+            ->pipe(fn($collection) => new RatingsDTO($collection->count('stars'), $collection->avg('stars')));
+    }
+
+    private function getTimesOfRecipe(Recipe $recipe): Collection
+    {
+        return $recipe->recipeTimes()
+            ->with([
+                'time' => fn($query) => $query->select('id', 'name'),
+                'timesUnit' => fn($query) => $query->select('id', 'short', 'long')
+            ])
+            ->get()
+            ->filter(function ($value) {
+                return $value['time'] != null;
+            });
+    }
+
+    private function getRecipeDTO(Recipe $recipe): RecipeDTO
+    {
+        return new RecipeDTO(
+            $this->getIngredientsOfRecipe($recipe),
+            $this->getStepsOfRecipe($recipe),
+            $this->getCommentsOfRecipe($recipe),
+            $this->getTimesOfRecipe($recipe),
+            $this->getRatingsOfRecipe($recipe),
+            $this->whetherTheRecipeIsAFavoriteForTheLoggedInUser($recipe),
+            $recipe,
+            $this->getTimeUnitOfMeasures()
+        );
+    }
+
+    private function getTimeUnitOfMeasures(): Collection
+    {
+        return TimesUnit::select('id', 'short', 'long')->get();
     }
 }

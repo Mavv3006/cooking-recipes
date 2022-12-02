@@ -14,9 +14,8 @@ const props = defineProps({
     ingredients: Array,
     steps: Array,
     user: Object,
-    is_favorite: Boolean, // TODO: refactor using camelCase
-    test: Object,
-    is_logged_in: Boolean, // TODO: refactor using camelCase
+    isFavorite: Boolean,
+    isLoggedIn: Boolean,
     comments: Array,
     ratings: Object,
     times: Object
@@ -36,7 +35,7 @@ const deleteRecipe = () => {
 <template>
     <AppLayout title="Detailsansicht">
         <MetaData
-            :is_favorite="is_favorite"
+            :is_favorite="isFavorite"
             :description="recipe.description"
             :difficulty="recipe.difficulty"
             :ratings="ratings"
