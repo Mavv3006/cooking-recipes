@@ -257,6 +257,7 @@ class RecipeController extends Controller
             });
     }
 
+    /// Todo: refactor into service container (also move called methods)
     private function getRecipeDTO(Recipe $recipe): RecipeDTO
     {
         return new RecipeDTO(
