@@ -79,7 +79,7 @@ const removeIngredient = (index, event) => {
             </h2>
         </template>
 
-        <form @submit.prevent="submitForm" class="py-12">
+        <form class="py-12" @submit.prevent="submitForm">
 
             <section
                 class="bg-white max-w-7xl mx-auto sm:px-6 lg:px-8 overflow-hidden shadow-xl sm:rounded-lg pt-4 pb-4">
@@ -92,9 +92,9 @@ const removeIngredient = (index, event) => {
                             <TextInput
                                 id="title"
                                 v-model="form.title"
-                                type="text"
                                 class="w-full"
                                 placeholder="z.B.: Gefüllte Tomaten"
+                                type="text"
                             />
                             <InputError :message="form.errors.title"/>
                         </div>
@@ -104,9 +104,9 @@ const removeIngredient = (index, event) => {
                             <TextInput
                                 id="description"
                                 v-model="form.description"
-                                type="text"
                                 class="w-full"
                                 placeholder="z.B.: ein leckeres Abendessen."
+                                type="text"
                             />
                             <InputError :message="form.errors.description"/>
                         </div>
@@ -118,34 +118,34 @@ const removeIngredient = (index, event) => {
                             <div class="flex space-x-4">
                                 <div class="flex space-x-2">
                                     <input
-                                        type="radio"
+                                        id="easy"
+                                        v-model="form.difficulty"
                                         class="rounded-full border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                                         name="difficulty"
-                                        id="easy"
+                                        type="radio"
                                         value="easy"
-                                        v-model="form.difficulty"
                                     >
                                     <InputLabel for="easy">Einfach</InputLabel>
                                 </div>
                                 <div class="flex space-x-2">
                                     <input
-                                        type="radio"
+                                        id="normal"
+                                        v-model="form.difficulty"
                                         class="rounded-full border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                                         name="difficulty"
-                                        id="normal"
+                                        type="radio"
                                         value="normal"
-                                        v-model="form.difficulty"
                                     >
                                     <InputLabel for="normal">Mittel</InputLabel>
                                 </div>
                                 <div class="flex space-x-2">
                                     <input
-                                        type="radio"
+                                        id="hard"
+                                        v-model="form.difficulty"
                                         class="rounded-full border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                                         name="difficulty"
-                                        id="hard"
+                                        type="radio"
                                         value="hard"
-                                        v-model="form.difficulty"
                                     >
                                     <InputLabel for="hard">Schwer</InputLabel>
                                 </div>
@@ -168,10 +168,10 @@ const removeIngredient = (index, event) => {
                                                 Dauer
                                             </InputLabel>
                                             <NumberInput
-                                                step="any"
-                                                min="0"
                                                 :id="`time-duration-${scope.form_time.id }`"
                                                 v-model.number="scope.form_time.duration"
+                                                min="0"
+                                                step="any"
                                             ></NumberInput>
                                         </div>
                                         <div>
@@ -180,10 +180,10 @@ const removeIngredient = (index, event) => {
                                                 Einheit
                                             </InputLabel>
                                             <select
-                                                class="border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm"
                                                 :id="`time-uom-${scope.form_time.id}`"
-                                                required
-                                                v-model="scope.form_time.uom_id">
+                                                v-model="scope.form_time.uom_id"
+                                                class="border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm"
+                                                required>
                                                 <option
                                                     v-for="timeUnitOfMeasure in timeUnitOfMeasures"
                                                     :value="timeUnitOfMeasure.id"
@@ -212,12 +212,13 @@ const removeIngredient = (index, event) => {
                     </p>
                     <InputError :message="form.errors.ingredients"/>
                     <div class="block">
-                        <div class="flex flex-col space-y-4 mt-4 empty:mt-0" id="recipe-step-list">
+                        <div id="recipe-step-list" class="flex flex-col space-y-4 mt-4 empty:mt-0">
                             <div v-for="(ingredient, index) in form.ingredients" class="flex space-x-2">
-                                <TextInput type="text" class="w-full" v-model="ingredient.description"
-                                           placeholder="z.B.: 180 g Zucker"/>
-                                <button @click="removeIngredient(index, $event)"
-                                        class="bg-red-500 hover:bg-red-600 focus:bg-red-700 text-white px-4 rounded-lg">
+                                <TextInput v-model="ingredient.description" class="w-full"
+                                           placeholder="z.B.: 180 g Zucker"
+                                           type="text"/>
+                                <button class="bg-red-500 hover:bg-red-600 focus:bg-red-700 text-white px-4 rounded-lg"
+                                        @click="removeIngredient(index, $event)">
                                     Löschen
                                 </button>
                             </div>
@@ -238,11 +239,11 @@ const removeIngredient = (index, event) => {
                     Schritte
                     <InputError :message="form.errors.steps"/>
                     <div class="block">
-                        <div class="flex flex-col space-y-4 mt-4 empty:mt-0" id="recipe-step-list">
+                        <div id="recipe-step-list" class="flex flex-col space-y-4 mt-4 empty:mt-0">
                             <div v-for="(step, index) in form.steps" class="flex space-x-2">
-                                <Textarea class="w-full" v-model="step.description"/>
-                                <button @click="removeStep(index, $event)"
-                                        class="bg-red-500 hover:bg-red-600 focus:bg-red-700 text-white p-4 rounded-lg">
+                                <Textarea v-model="step.description" class="w-full"/>
+                                <button class="bg-red-500 hover:bg-red-600 focus:bg-red-700 text-white p-4 rounded-lg"
+                                        @click="removeStep(index, $event)">
                                     Löschen
                                 </button>
                             </div>

@@ -1,13 +1,13 @@
 <script setup>
-import { computed, ref, watch } from 'vue';
-import { usePage } from '@inertiajs/inertia-vue3';
+import {computed, ref, watch} from 'vue';
+import {usePage} from '@inertiajs/inertia-vue3';
 
 const show = ref(true);
 const style = computed(() => usePage().props.value.jetstream.flash?.bannerStyle || 'success');
 const message = computed(() => usePage().props.value.jetstream.flash?.banner || '');
 
 watch(message, async () => {
-  show.value = true;
+    show.value = true;
 });
 </script>
 
@@ -17,7 +17,8 @@ watch(message, async () => {
             <div class="max-w-screen-xl mx-auto py-2 px-3 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between flex-wrap">
                     <div class="w-0 flex-1 flex items-center min-w-0">
-                        <span class="flex p-2 rounded-lg" :class="{ 'bg-indigo-600': style == 'success', 'bg-red-600': style == 'danger' }">
+                        <span :class="{ 'bg-indigo-600': style == 'success', 'bg-red-600': style == 'danger' }"
+                              class="flex p-2 rounded-lg">
                             <svg
                                 v-if="style == 'success'"
                                 class="h-5 w-5 text-white"

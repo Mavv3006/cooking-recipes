@@ -16,7 +16,7 @@ class CommentController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param Request $request
+     * @param  Request  $request
      * @return RedirectResponse
      * @throws AuthorizationException
      * @throws ValidationException
@@ -48,8 +48,8 @@ class CommentController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param Request $request
-     * @param Comment $comment
+     * @param  Request  $request
+     * @param  Comment  $comment
      * @return RedirectResponse
      * @throws AuthorizationException
      */
@@ -70,7 +70,7 @@ class CommentController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param Comment $comment
+     * @param  Comment  $comment
      * @return RedirectResponse
      * @throws AuthorizationException
      */

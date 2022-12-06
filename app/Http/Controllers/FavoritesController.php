@@ -29,7 +29,7 @@ class FavoritesController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param Recipe $recipe
+     * @param  Recipe  $recipe
      * @return RedirectResponse
      */
     public function store(Recipe $recipe): RedirectResponse

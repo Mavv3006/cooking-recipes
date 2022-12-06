@@ -4,10 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Rating;
 use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Auth\Events\Login;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -19,7 +17,7 @@ class RatingController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param Request $request
+     * @param  Request  $request
      * @return RedirectResponse
      * @throws AuthorizationException
      * @throws ValidationException
@@ -54,8 +52,8 @@ class RatingController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param Request $request
-     * @param Rating $rating
+     * @param  Request  $request
+     * @param  Rating  $rating
      * @return RedirectResponse
      * @throws AuthorizationException
      * @throws ValidationException
@@ -79,7 +77,7 @@ class RatingController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param Rating $rating
+     * @param  Rating  $rating
      * @return RedirectResponse
      * @throws AuthorizationException
      */
