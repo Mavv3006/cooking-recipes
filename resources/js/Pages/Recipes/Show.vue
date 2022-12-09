@@ -1,6 +1,6 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
-import {useForm, usePage} from "@inertiajs/inertia-vue3";
+import {Link, useForm, usePage} from "@inertiajs/inertia-vue3";
 import MetaData from "@/Components/MetaData.vue";
 import IngredientsSection from "@/Components/IngredientsSection.vue";
 import StepSection from "@/Components/StepSection.vue";
@@ -35,12 +35,12 @@ const deleteRecipe = () => {
 <template>
     <AppLayout title="Detailsansicht">
         <MetaData
-            :is_favorite="isFavorite"
+            :creation_date="recipe.created_at"
             :description="recipe.description"
             :difficulty="recipe.difficulty"
+            :is_favorite="isFavorite"
             :ratings="ratings"
             :title="recipe.title"
-            :creation_date="recipe.created_at"
             @toggle-favorite="toggleFavorite"/>
 
         <hr>
@@ -51,14 +51,21 @@ const deleteRecipe = () => {
 
             <button
                 v-if="isAuthor"
-                @click="deleteRecipe"
                 class="block items-center px-3 mb-3 py-1 bg-gray-200 border border-transparent rounded-md hover:bg-gray-100 active:bg-gray-300 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25 transition"
-            >Rezept löschen
+                @click="deleteRecipe">
+                Rezept löschen
             </button>
+
+            <Link v-if="isAuthor"
+                  :href="route('recipes.edit', {'recipe': recipe.id})"
+                  class="block items-center px-3 mb-3 py-1 bg-gray-200 border border-transparent rounded-md hover:bg-gray-100 active:bg-gray-300 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25 transition"
+            >
+                Rezept bearbeiten
+            </Link>
 
             <RatingForm :recipe_id="recipe.id"/>
 
-            <div class="mt-2" v-if="times.length>0">
+            <div v-if="times.length>0" class="mt-2">
                 Zeiten:
                 <div class="flex space-x-4">
                     <span v-for="time in times" class="bg-gray-100 px-3 py-1 rounded-full hover:bg-gray-200">

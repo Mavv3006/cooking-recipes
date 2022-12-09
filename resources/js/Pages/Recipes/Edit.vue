@@ -4,10 +4,10 @@ import PrimaryButton from "@/Components/PrimaryButton.vue";
 import {useForm} from "@inertiajs/inertia-vue3";
 import InputLabel from "@/Components/InputLabel.vue";
 import TextInput from "@/Components/TextInput.vue";
-import NumberInput from "@/Components/NumberInput.vue";
 import InputError from "@/Components/InputError.vue";
 import Textarea from "@/Components/Textarea.vue";
 import {computed, ref} from "vue";
+import SingleTimeEditingElement from "@/Pages/Recipes/SingleTimeEditingElement.vue";
 
 const props = defineProps({
     recipe: Object,
@@ -25,7 +25,7 @@ const timesFormArray = ref([]);
 const timesWithDuration = computed(() => timesFormArray.value.filter((value) => value.duration > 0));
 
 props.times.forEach((value) => {
-    timesFormArray.value.push({id: value.id, uom_id: 1, duration: 0})
+    timesFormArray.value.push({id: value.times_id, uom_id: value.times_unit_id, duration: value.duration})
 });
 
 const form = useForm({
@@ -69,10 +69,15 @@ const removeIngredient = (index, event) => {
     if (event) event.preventDefault();
     form.ingredients.splice(index, 1);
 }
+
+const findFormTime = (time) => {
+    let timeForTime = timesFormArray.value.find((value) => value.id === time.id)
+    return {id: timeForTime.id, duration: timeForTime.duration, uom_id: timeForTime.uom_id}
+};
 </script>
 
 <template>
-    <AppLayout title="Erstelle Rezept">
+    <AppLayout :title="`${ recipe.title } bearbeiten`">
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 Bearbeite das Rezept für "{{ recipe.title }}"
@@ -158,41 +163,9 @@ const removeIngredient = (index, event) => {
                         Zeiten
                         <div class="flex flex-col mt-4 space-y-2">
                             <div v-for="time in times">
-                                {{ time.name }}
-                                <div class="flex space-x-4">
-                                    <template
-                                        v-for="scope in [{form_time: timesFormArray.find((value) => value.id === time.id)}]">
-                                        <div>
-                                            <InputLabel
-                                                :for="`time-duration-${scope.form_time.id }`">
-                                                Dauer
-                                            </InputLabel>
-                                            <NumberInput
-                                                :id="`time-duration-${scope.form_time.id }`"
-                                                v-model.number="scope.form_time.duration"
-                                                min="0"
-                                                step="any"
-                                            ></NumberInput>
-                                        </div>
-                                        <div>
-                                            <InputLabel
-                                                :for="`time-uom-${scope.form_time.id}`">
-                                                Einheit
-                                            </InputLabel>
-                                            <select
-                                                :id="`time-uom-${scope.form_time.id}`"
-                                                v-model="scope.form_time.uom_id"
-                                                class="border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm"
-                                                required>
-                                                <option
-                                                    v-for="timeUnitOfMeasure in timeUnitOfMeasures"
-                                                    :value="timeUnitOfMeasure.id"
-                                                >{{ timeUnitOfMeasure.long }}(n)
-                                                </option>
-                                            </select>
-                                        </div>
-                                    </template>
-                                </div>
+                                {{ time.time.name }}
+                                <SingleTimeEditingElement :time="findFormTime(time.time)"
+                                                          :time-unit-of-measures="timeUnitOfMeasures"/>
                             </div>
                         </div>
                     </div>
