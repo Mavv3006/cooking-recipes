@@ -6,8 +6,7 @@ import InputLabel from "@/Components/InputLabel.vue";
 import TextInput from "@/Components/TextInput.vue";
 import InputError from "@/Components/InputError.vue";
 import Textarea from "@/Components/Textarea.vue";
-import {computed, ref} from "vue";
-import SingleTimeEditingElement from "@/Pages/Recipes/SingleTimeEditingElement.vue";
+import NumberInput from "@/Components/NumberInput.vue";
 
 const props = defineProps({
     recipe: Object,
@@ -20,16 +19,8 @@ const props = defineProps({
     timeUnitOfMeasures: Array
 });
 
-const timesFormArray = ref([]);
-
-const timesWithDuration = computed(() => timesFormArray.value.filter((value) => value.duration > 0));
-
-props.times.forEach((value) => {
-    timesFormArray.value.push({id: value.times_id, uom_id: value.times_unit_id, duration: value.duration})
-});
-
 const form = useForm({
-    _method: 'POST',
+    _method: 'PUT',
     title: props.recipe.title,
     description: props.recipe.description,
     steps: props.steps,
@@ -39,14 +30,14 @@ const form = useForm({
         };
     }),
     difficulty: props.recipe.difficulty,
-    times: timesWithDuration
+    times: props.times.map((value) => {
+        return {id: value.times_id, uom_id: value.times_unit_id, duration: value.duration};
+    })
 });
 
-
 const submitForm = () => {
-    form.times = timesWithDuration;
     console.log(form.data());
-    form.post(route('recipes.update'));
+    form.put(route('recipes.update', {'recipe': props.recipe.id}));
 }
 
 const addStep = (event) => {
@@ -59,7 +50,6 @@ const removeStep = (index, event) => {
     form.steps.splice(index, 1);
 };
 
-
 const addIngredient = (event) => {
     if (event) event.preventDefault();
     form.ingredients.push({description: ''});
@@ -69,11 +59,6 @@ const removeIngredient = (index, event) => {
     if (event) event.preventDefault();
     form.ingredients.splice(index, 1);
 }
-
-const findFormTime = (time) => {
-    let timeForTime = timesFormArray.value.find((value) => value.id === time.id)
-    return {id: timeForTime.id, duration: timeForTime.duration, uom_id: timeForTime.uom_id}
-};
 </script>
 
 <template>
@@ -164,8 +149,40 @@ const findFormTime = (time) => {
                         <div class="flex flex-col mt-4 space-y-2">
                             <div v-for="time in times">
                                 {{ time.time.name }}
-                                <SingleTimeEditingElement :time="findFormTime(time.time)"
-                                                          :time-unit-of-measures="timeUnitOfMeasures"/>
+                                <div class="flex space-x-4">
+                                    <template
+                                        v-for="scope in [{form_time: form.times.find((value) => value.id === time.time.id)}]">
+                                        <div>
+                                            <InputLabel
+                                                :for="`time-duration-${scope.form_time.id }`">
+                                                Dauer
+                                            </InputLabel>
+                                            <NumberInput
+                                                :id="`time-duration-${scope.form_time.id }`"
+                                                v-model.number="scope.form_time.duration"
+                                                min="0"
+                                                step="any"
+                                            ></NumberInput>
+                                        </div>
+                                        <div>
+                                            <InputLabel
+                                                :for="`time-uom-${scope.form_time.id}`">
+                                                Einheit
+                                            </InputLabel>
+                                            <select
+                                                :id="`time-uom-${scope.form_time.id}`"
+                                                v-model="scope.form_time.uom_id"
+                                                class="border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm"
+                                                required>
+                                                <option
+                                                    v-for="timeUnitOfMeasure in timeUnitOfMeasures"
+                                                    :value="timeUnitOfMeasure.id"
+                                                >{{ timeUnitOfMeasure.long }}(n)
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </template>
+                                </div>
                             </div>
                         </div>
                     </div>
