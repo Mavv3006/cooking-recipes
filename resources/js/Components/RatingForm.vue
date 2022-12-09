@@ -30,19 +30,19 @@ const submitForm = () => {
 <template>
     <button
         v-if="is_rating === false"
-        @click="is_rating = true"
-        class="inline-flex items-center px-3 py-1 bg-gray-200 border border-transparent rounded-md hover:bg-gray-100 active:bg-gray-300 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25 transition">
+        class="inline-flex items-center px-3 py-1 bg-gray-200 border border-transparent rounded-md hover:bg-gray-100 active:bg-gray-300 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25 transition"
+        @click="is_rating = true">
         Bewerten
     </button>
     <div class="flex content-center">
-        <form @submit.prevent="submitForm" v-if="is_rating === true">
+        <form v-if="is_rating === true" @submit.prevent="submitForm">
             <InputLabel for="stars">Anzahl Sterne. Von 1 bis 5</InputLabel>
             <NumberInput
                 id="stars"
                 v-model.number="form.stars"
-                placeholder="z.B.: 1"
-                min="1"
                 max="5"
+                min="1"
+                placeholder="z.B.: 1"
                 step="1"
             />
             <InputError :message="form.errors.stars"/>
@@ -51,8 +51,9 @@ const submitForm = () => {
             </PrimaryButton>
         </form>
         <button
+            v-if="is_rating===true"
             class="ml-5 px-3 py-1 bg-gray-200 border border-transparent rounded-md hover:bg-gray-100 active:bg-gray-300 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25 transition rounded-md mt-6 mb-1"
-            v-if="is_rating===true" @click="is_rating=false">Abbrechen
+            @click="is_rating=false">Abbrechen
         </button>
     </div>
 </template>

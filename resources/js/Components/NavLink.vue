@@ -1,6 +1,6 @@
 <script setup>
-import { computed } from 'vue';
-import { Link } from '@inertiajs/inertia-vue3';
+import {computed} from 'vue';
+import {Link} from '@inertiajs/inertia-vue3';
 
 const props = defineProps({
     href: String,
@@ -16,6 +16,6 @@ const classes = computed(() => {
 
 <template>
     <Link :href="href" :class="classes">
-        <slot />
+        <slot/>
     </Link>
 </template>

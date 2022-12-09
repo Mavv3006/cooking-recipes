@@ -18,7 +18,7 @@ class HandleInertiaRequests extends Middleware
     /**
      * Determine the current asset version.
      *
-     * @param Request $request
+     * @param  Request  $request
      * @return string|null
      */
     public function version(Request $request): ?string
@@ -29,7 +29,7 @@ class HandleInertiaRequests extends Middleware
     /**
      * Define the props that are shared by default.
      *
-     * @param Request $request
+     * @param  Request  $request
      * @return array
      */
     public function share(Request $request): array

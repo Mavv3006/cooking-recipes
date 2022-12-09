@@ -42,15 +42,13 @@ Route::prefix('ratings')
             ->name('ratings.delete');
     });
 
+Route::resource('recipes', RecipeController::class)
+    ->only('create', 'store', 'destroy', 'edit', 'update')
+    ->middleware(['auth:sanctum', config('jetstream.auth_session')]);
+
 Route::prefix('recipes')->group(function () {
-    Route::resource('', RecipeController::class)
-        ->only('create', 'store', 'index')
-        ->names([
-            'create' => 'recipes.create',
-            'store' => 'recipes.store',
-            'index' => 'recipes.index'
-        ])
-        ->middleware(['auth:sanctum', config('jetstream.auth_session')]);
+    Route::get('', [RecipeController::class, 'index'])
+        ->name('recipes.index');
     Route::get('/{recipe}', [RecipeController::class, 'show'])->name('recipes.show');
     Route::post('/{recipe}/favorite', [FavoritesController::class, 'store'])
         ->middleware(['auth:sanctum', config('jetstream.auth_session')])
