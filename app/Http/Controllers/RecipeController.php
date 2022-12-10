@@ -130,18 +130,6 @@ class RecipeController extends Controller
         return redirect()->route('recipes.index');
     }
 
-    private function updateRecipeSteps(
-        \Illuminate\Contracts\Validation\Validator|\Illuminate\Validation\Validator $validator,
-        Recipe $recipe
-    ): void {
-        Log::debug('Update steps');
-        $steps = $validator->safe()->only(['steps'])['steps'];
-        Log::debug('steps: ' . json_encode($steps));
-        $recipe->steps()->delete();
-        $recipe->steps()->createMany($steps);
-        Log::info('All recipe ' . sizeof($steps) . ' steps updated');
-    }
-
     private function updateRecipeIngredients(
         \Illuminate\Contracts\Validation\Validator|\Illuminate\Validation\Validator $validator,
         Recipe $recipe
@@ -285,7 +273,7 @@ class RecipeController extends Controller
             ],
             'steps' => 'required|array|min:1',
             'steps.*.description' => 'required|string',
-            'steps.*.id' => 'string',
+            'steps.*.id' => 'integer|min:0',
             'difficulty' => ['required', Rule::in(['easy', 'normal', 'hard'])],
             'times' => 'array:id,uom_id,duration',
             'times.*.id' => 'integer|min:0',

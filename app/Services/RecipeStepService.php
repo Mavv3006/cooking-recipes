@@ -28,5 +28,12 @@ class RecipeStepService
          * The order of the steps is determined by the order of the (in ascending order). This is because a reordering
          * of steps is currently not in scope.
          * */
+        // TODO: Update the logic as described in the comment above
+
+        Log::debug('Update steps');
+        Log::debug('steps: ', (array)$data);
+        $recipe->steps()->delete();
+        $recipe->steps()->createMany((array)$data);
+        Log::info('All recipe ' . sizeof($data) . ' steps updated');
     }
 }
