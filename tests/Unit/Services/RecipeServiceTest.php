@@ -3,6 +3,7 @@
 namespace Services;
 
 use App\DTOs\Creating\RecipeDataDTO;
+use App\Models\Recipe;
 use App\Models\User;
 use App\Services\RecipeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -21,6 +22,7 @@ class RecipeServiceTest extends TestCase
 
         $recipe = $this->recipeService->create($user, $dto);
 
+        $this->assertInstanceOf(Recipe::class, $recipe);
         $this->assertDatabaseCount($recipe->getTable(), 1);
     }
 
