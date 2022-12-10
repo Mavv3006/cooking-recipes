@@ -121,6 +121,41 @@ class RecipeTimeServiceTest extends TestCase
         $this->assertDatabaseCount((new RecipeTimes())->getTable(), 0);
     }
 
+    public function testUpdateAddNewTime()
+    {
+        (new TimesUnitSeeder())->run();
+        $recipe = Recipe::factory()->for(User::factory())->create();
+        $dto = new RecipeTimeDTO([
+            new SingleTimeDTO(
+                Times::factory()
+                    ->create()
+                    ->id,
+                TimesUnit::all()
+                    ->random(1)
+                    ->first()
+                    ->id,
+                23.5
+            ),
+        ]);
+        $this->service->create($recipe, $dto);
+
+        $newDto = new RecipeTimeDTO([
+            new SingleTimeDTO(
+                Times::factory()
+                    ->create()
+                    ->id,
+                TimesUnit::all()
+                    ->random(1)
+                    ->first()
+                    ->id,
+                0
+            ),
+        ]);
+        $this->service->update($recipe, $newDto);
+
+        $this->assertDatabaseCount((new RecipeTimes())->getTable(), 2);
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
