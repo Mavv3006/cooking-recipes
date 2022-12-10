@@ -14,6 +14,21 @@ class RecipeIngredientService
     {
         Log::debug('Create ingredients');
         Log::debug('ingredients: ' . json_encode((array)$data));
+        $this->createIngredients($data, $recipe);
+        Log::info('all recipe ingredients created');
+    }
+
+    public function update(Recipe $recipe, RecipeIngredientDTO $data): void
+    {
+        Log::debug('Update ingredients');
+        Log::debug('ingredients: ' . json_encode((array)$data));
+        RecipeIngredient::where('recipe_id', $recipe->id)->delete();
+        $this->createIngredients($data, $recipe);
+        Log::info('all recipe ingredients created');
+    }
+
+    private function createIngredients(RecipeIngredientDTO $data, Recipe $recipe): void
+    {
         foreach ($data as $request_ingredient) {
             $individual_components = preg_split('/\s/', $request_ingredient['description']);
             Log::debug(json_encode($individual_components));
@@ -31,6 +46,5 @@ class RecipeIngredientService
                 'Recipe Ingredient for recipe ' . $created_recipe_ingredient->recipe_id . ' and ingredient ' . $created_recipe_ingredient->ingredient_id . ' created.'
             );
         }
-        Log::info('all recipe ingredients created');
     }
 }

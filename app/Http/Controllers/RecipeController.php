@@ -5,9 +5,7 @@ namespace App\Http\Controllers;
 use App\DTOs\Creating\RecipeRequestWrapperDTO;
 use App\DTOs\Extracting\RatingsDTO;
 use App\DTOs\Extracting\RecipeDTO;
-use App\Models\Ingredient;
 use App\Models\Recipe;
-use App\Models\RecipeIngredient;
 use App\Models\RecipeTimes;
 use App\Models\Times;
 use App\Models\TimesUnit;
@@ -32,9 +30,9 @@ use Inertia\Response;
 class RecipeController extends Controller
 {
     protected RecipeService $recipeService;
-    protected RecipeStepService $recipeStepService;
-    protected RecipeIngredientService $recipeIngredientService;
-    protected RecipeTimeService $recipeTimeService;
+    protected RecipeStepService $stepService;
+    protected RecipeIngredientService $ingredientService;
+    protected RecipeTimeService $timeService;
     protected RecipeRequestParsingService $parsingService;
 
     public function __construct(
@@ -45,9 +43,9 @@ class RecipeController extends Controller
         RecipeRequestParsingService $parsingService
     ) {
         $this->recipeService = $recipeService;
-        $this->recipeStepService = $recipeStepService;
-        $this->recipeIngredientService = $recipeIngredientService;
-        $this->recipeTimeService = $recipeTimeService;
+        $this->stepService = $recipeStepService;
+        $this->ingredientService = $recipeIngredientService;
+        $this->timeService = $recipeTimeService;
         $this->parsingService = $parsingService;
     }
 
@@ -73,9 +71,9 @@ class RecipeController extends Controller
 
         DB::beginTransaction();
         $recipe = $this->recipeService->create($request->user(), $data->recipe);
-        $this->recipeStepService->create($recipe, $data->steps);
-        $this->recipeIngredientService->create($recipe, $data->ingredients);
-        $this->recipeTimeService->create($recipe, $data->times);
+        $this->stepService->create($recipe, $data->steps);
+        $this->ingredientService->create($recipe, $data->ingredients);
+        $this->timeService->create($recipe, $data->times);
         DB::commit();
 
         return redirect()->route('recipes.show', ['recipe' => $recipe->id]);
@@ -105,10 +103,9 @@ class RecipeController extends Controller
     {
         $data = $this->validateRecipeParameters($request);
         DB::beginTransaction();
-        $this->recipeStepService->update($recipe, $data->steps);
+        $this->stepService->update($recipe, $data->steps);
+        $this->ingredientService->update($recipe, $data->ingredients);
 
-//        $this->updateRecipeSteps($validator, $recipe);
-//        $this->updateRecipeIngredients($validator, $recipe);
 //        if (sizeof($validator->validated()['times']) > 0) {
 //            $this->updateRecipeTimes($validator, $recipe);
 //        }
@@ -128,30 +125,6 @@ class RecipeController extends Controller
         $recipe->delete();
         Log::info('deleted recipe', ['recipe' => $recipe->id]);
         return redirect()->route('recipes.index');
-    }
-
-    private function updateRecipeIngredients(
-        \Illuminate\Contracts\Validation\Validator|\Illuminate\Validation\Validator $validator,
-        Recipe $recipe
-    ): void {
-        Log::debug('Update ingredients');
-        $request_ingredients = $validator->safe()->only('ingredients')['ingredients'];
-        Log::debug('ingredients: ' . json_encode($request_ingredients));
-        foreach ($request_ingredients as $request_ingredient) {
-            $individual_components = preg_split('/\s/', $request_ingredient['description']);
-            Log::debug(json_encode($individual_components));
-            $ingredient = Ingredient::firstOrCreate([
-                'name' => $individual_components[2],
-                'uom' => $individual_components[1]
-            ]);
-            RecipeIngredient::where('recipe_id', $recipe->id)
-                ->where('ingredient_id', $ingredient->id)
-                ->update(['quantity' => $individual_components[0]]);
-            Log::debug(
-                'Recipe Ingredient for recipe ' . $recipe->id . ' and ingredient ' . $ingredient->id . ' updated.'
-            );
-        }
-        Log::info('all recipe ingredients created');
     }
 
     public function updateRecipeTimes(
