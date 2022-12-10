@@ -5,7 +5,7 @@ namespace App\DTOs\Creating;
 use App\DTOs\DTO;
 use Countable;
 
-class RecipeStepDTO implements DTO, Countable
+class RecipeIngredientDTO implements DTO, Countable
 {
     public function __construct(
         public readonly array $elements
@@ -14,7 +14,7 @@ class RecipeStepDTO implements DTO, Countable
 
     public function toArray(): array
     {
-        return ['steps' => $this->elements];
+        return ['ingredients' => $this->elements];
     }
 
     public function count(): int
