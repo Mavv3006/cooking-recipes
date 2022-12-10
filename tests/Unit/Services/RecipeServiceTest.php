@@ -26,6 +26,21 @@ class RecipeServiceTest extends TestCase
         $this->assertDatabaseCount($recipe->getTable(), 1);
     }
 
+    public function testUpdate()
+    {
+        $user = User::factory()->create();
+        $dto = new RecipeDataDTO('title', 'description', 'normal');
+        $recipe = $this->recipeService->create($user, $dto);
+
+        $this->recipeService->update($recipe, new RecipeDataDTO('title', 'test', 'hard'));
+
+        $this->assertDatabaseCount($recipe->getTable(), 1);
+
+        $newRecipe = Recipe::all()->first();
+        $this->assertEquals('test', $newRecipe->description);
+        $this->assertEquals('hard', $newRecipe->difficulty);
+    }
+
     protected function setUp(): void
     {
         parent::setUp();

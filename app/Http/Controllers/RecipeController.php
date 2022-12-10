@@ -102,6 +102,7 @@ class RecipeController extends Controller
     {
         $data = $this->validateRecipeParameters($request);
         DB::beginTransaction();
+        $this->recipeService->update($recipe, $data->recipe);
         $this->stepService->update($recipe, $data->steps);
         $this->ingredientService->update($recipe, $data->ingredients);
         $this->timeService->update($recipe, $data->times);
