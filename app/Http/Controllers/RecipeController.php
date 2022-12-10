@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\DataTransferObjects\RatingsDTO;
-use App\DataTransferObjects\RecipeDTO;
+use App\DTOs\Creating\RecipeDataDTO;
+use App\DTOs\Creating\RecipeService;
+use App\DTOs\Extracting\RatingsDTO;
+use App\DTOs\Extracting\RecipeDTO;
 use App\Models\Ingredient;
 use App\Models\Recipe;
 use App\Models\RecipeIngredient;
@@ -12,6 +14,7 @@ use App\Models\Times;
 use App\Models\TimesUnit;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
@@ -25,6 +28,13 @@ use Inertia\Response;
 
 class RecipeController extends Controller
 {
+    protected RecipeService $recipeService;
+
+    public function __construct(RecipeService $recipeService)
+    {
+        $this->recipeService = $recipeService;
+    }
+
     public function index(): Response
     {
         $recipes = Recipe::with(['user' => fn($query) => $query->select('id', 'name')])
@@ -44,8 +54,9 @@ class RecipeController extends Controller
     {
         $validator = $this->validateRecipeParameters($request);
         $data = $validator->validated();
+        $recipeDataDto = new RecipeDataDTO($data['title'], $data['description'], $data['difficulty']);
         DB::beginTransaction();
-        $recipe = $this->createRecipe($request, $data);
+        $recipe = $this->createRecipe($request, $recipeDataDto);
         $this->createRecipeSteps($validator, $recipe);
         $this->createRecipeIngredients($validator, $recipe);
         if (sizeof($validator->validated()['times']) > 0) {
@@ -126,12 +137,9 @@ class RecipeController extends Controller
         Log::info('All recipe ' . sizeof($steps) . ' steps updated');
     }
 
-    private function createRecipe(Request $request, array $data): mixed
+    private function createRecipe(Request $request, RecipeDataDTO $data): Model
     {
-        Log::debug('Create recipe');
-        $recipe = $request->user()->recipes()->create($data);
-        Log::info('Recipe created: ' . $recipe->id);
-        return $recipe;
+        return $this->recipeService->create($request->user(), $data);
     }
 
     private function createRecipeIngredients(

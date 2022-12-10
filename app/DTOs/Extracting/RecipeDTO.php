@@ -1,12 +1,13 @@
 <?php
 
-namespace App\DataTransferObjects;
+namespace App\DTOs\Extracting;
 
+use App\DTOs\DTO;
 use App\Models\Recipe;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 
-class RecipeDTO
+class RecipeDTO implements DTO
 {
     public function __construct(
         public readonly \Illuminate\Support\Collection $ingredients,

@@ -1,8 +1,10 @@
 <?php
 
-namespace App\DataTransferObjects;
+namespace App\DTOs\Extracting;
 
-class RatingsDTO
+use App\DTOs\DTO;
+
+class RatingsDTO implements DTO
 {
     public function __construct(
         public readonly int $count,
