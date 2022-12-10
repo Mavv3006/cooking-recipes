@@ -6,7 +6,6 @@ use App\DTOs\Creating\RecipeRequestWrapperDTO;
 use App\DTOs\Extracting\RatingsDTO;
 use App\DTOs\Extracting\RecipeDTO;
 use App\Models\Recipe;
-use App\Models\RecipeTimes;
 use App\Models\Times;
 use App\Models\TimesUnit;
 use App\Services\RecipeIngredientService;
@@ -105,10 +104,7 @@ class RecipeController extends Controller
         DB::beginTransaction();
         $this->stepService->update($recipe, $data->steps);
         $this->ingredientService->update($recipe, $data->ingredients);
-
-//        if (sizeof($validator->validated()['times']) > 0) {
-//            $this->updateRecipeTimes($validator, $recipe);
-//        }
+        $this->timeService->update($recipe, $data->times);
         DB::commit();
 
         return redirect()->route('recipes.show', ['recipe' => $recipe->id]);
@@ -125,25 +121,6 @@ class RecipeController extends Controller
         $recipe->delete();
         Log::info('deleted recipe', ['recipe' => $recipe->id]);
         return redirect()->route('recipes.index');
-    }
-
-    public function updateRecipeTimes(
-        \Illuminate\Contracts\Validation\Validator|\Illuminate\Validation\Validator $validator,
-        Recipe $recipe
-    ): void {
-        Log::debug('Update times');
-        $request_times = $validator->safe()->only('times')['times'];
-        Log::debug('times: ' . json_encode($request_times));
-        foreach ($request_times as $time) {
-            RecipeTimes::where('recipe_id', $recipe->id)
-                ->where('times_id', $time['id'])
-                ->where('times_unit_id', $time['uom_id'])
-                ->update(['duration' => $time['duration']]);
-            Log::debug(
-                'Recipe time for recipe ' . $recipe->id . ' and time ' . $time['id'] . ' with duration ' . $time['duration'] . ' updated.'
-            );
-        }
-        Log::info('all recipe times updated');
     }
 
     private function getStepsOfRecipe(Recipe $recipe): Collection

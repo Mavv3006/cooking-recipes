@@ -52,6 +52,75 @@ class RecipeTimeServiceTest extends TestCase
         $this->assertDatabaseCount((new RecipeTimes())->getTable(), 0);
     }
 
+    public function testUpdate()
+    {
+        (new TimesUnitSeeder())->run();
+        $recipe = Recipe::factory()->for(User::factory())->create();
+        $time_id = Times::factory()
+            ->create()
+            ->id;
+        $dto = new RecipeTimeDTO([
+            new SingleTimeDTO(
+                $time_id,
+                TimesUnit::all()
+                    ->random(1)
+                    ->first()
+                    ->id,
+                23.5
+            ),
+        ]);
+        $this->service->create($recipe, $dto);
+
+        $newDto = new RecipeTimeDTO([
+            new SingleTimeDTO(
+                $time_id,
+                TimesUnit::all()
+                    ->random(1)
+                    ->first()
+                    ->id,
+                25
+            ),
+        ]);
+        $this->service->update($recipe, $newDto);
+
+        $this->assertDatabaseCount((new RecipeTimes())->getTable(), 1);
+        $this->assertEquals(25, RecipeTimes::all()->first()->duration);
+    }
+
+    public function testUpdateDeletingExistingTime()
+    {
+        (new TimesUnitSeeder())->run();
+        $recipe = Recipe::factory()->for(User::factory())->create();
+        $time_id = Times::factory()
+            ->create()
+            ->id;
+        $dto = new RecipeTimeDTO([
+            new SingleTimeDTO(
+                $time_id,
+                TimesUnit::all()
+                    ->random(1)
+                    ->first()
+                    ->id,
+                23.5
+            ),
+        ]);
+        $this->service->create($recipe, $dto);
+
+        $newDto = new RecipeTimeDTO([
+            new SingleTimeDTO(
+                $time_id,
+                TimesUnit::all()
+                    ->random(1)
+                    ->first()
+                    ->id,
+                0
+            ),
+        ]);
+        $this->service->update($recipe, $newDto);
+
+        $this->assertDatabaseCount((new RecipeTimes())->getTable(), 0);
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
