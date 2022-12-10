@@ -41,6 +41,17 @@ class RecipeTimeServiceTest extends TestCase
         $this->assertDatabaseCount((new RecipeTimes())->getTable(), 1);
     }
 
+    public function testCreateWithEmptyArray()
+    {
+        (new TimesUnitSeeder())->run();
+        $recipe = Recipe::factory()->for(User::factory())->create();
+        $dto = new RecipeTimeDTO([]);
+
+        $this->service->create($recipe, $dto);
+
+        $this->assertDatabaseCount((new RecipeTimes())->getTable(), 0);
+    }
+
     protected function setUp(): void
     {
         parent::setUp();

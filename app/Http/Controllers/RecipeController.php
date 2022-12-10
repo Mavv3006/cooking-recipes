@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\DTOs\Creating\RecipeDataDTO;
 use App\DTOs\Creating\RecipeIngredientDTO;
+use App\DTOs\Creating\RecipeRequestWrapperDTO;
 use App\DTOs\Creating\RecipeStepDTO;
 use App\DTOs\Creating\RecipeTimeDTO;
 use App\DTOs\Creating\SingleTimeDTO;
@@ -68,27 +69,14 @@ class RecipeController extends Controller
 
     public function store(Request $request): Application|RedirectResponse|Redirector
     {
-        $validator = $this->validateRecipeParameters($request);
-        $data = $validator->validated();
-        $recipeDto = new RecipeDataDTO($data['title'], $data['description'], $data['difficulty']);
-        $recipeStepDto = new RecipeStepDTO($data['steps']);
-        $recipeIngredientDto = new RecipeIngredientDTO($data['ingredients']);
-        $hasTimes = sizeof($data['times']) > 0;
-        if ($hasTimes) {
-            $times = array();
-            foreach ($data['times'] as $time) {
-                $times[] = new SingleTimeDTO($time['id'], $time['uom_id'], $time['duration']);
-            }
-            $recipeTimeDto = new RecipeTimeDTO($times);
-        }
+        $data = $this->validateRecipeParameters($request);
+        Log::debug('validated data:', (array)$data);
 
         DB::beginTransaction();
-        $recipe = $this->recipeService->create($request->user(), $recipeDto);
-        $this->recipeStepService->create($recipe, $recipeStepDto);
-        $this->recipeIngredientService->create($recipe, $recipeIngredientDto);
-        if ($hasTimes) {
-            $this->recipeTimeService->create($recipe, $recipeTimeDto);
-        }
+        $recipe = $this->recipeService->create($request->user(), $data->recipe);
+        $this->recipeStepService->create($recipe, $data->steps);
+        $this->recipeIngredientService->create($recipe, $data->ingredients);
+        $this->recipeTimeService->create($recipe, $data->times);
         DB::commit();
 
         return redirect()->route('recipes.show', ['recipe' => $recipe->id]);
@@ -278,9 +266,9 @@ class RecipeController extends Controller
         return TimesUnit::select('id', 'short', 'long')->get();
     }
 
-    private function validateRecipeParameters(Request $request
-    ): \Illuminate\Validation\Validator|\Illuminate\Contracts\Validation\Validator {
-        $validator = Validator::make($request->all(), [
+    private function validateRecipeParameters(Request $request): RecipeRequestWrapperDTO
+    {
+        $rules = [
             'title' => 'required|string|max:100',
             'description' => 'required|string|max:255',
             'ingredients' => 'required|array|min:1',
@@ -301,16 +289,27 @@ class RecipeController extends Controller
             'times.*.id' => 'integer|min:0',
             'times.*.uom_id' => 'integer|min:0',
             'times.*.duration' => 'numeric|min:0',
-        ]);
+        ];
+        $validator = Validator::make($request->all(), $rules);
 
-        Log::debug('Content of request:');
-        Log::debug($request->getContent());
-        Log::debug(" ");
+        Log::debug('Content of request:', (array)$request->getContent());
         if ($validator->fails()) {
-            Log::error("Validation failed:");
-            Log::error($validator->errors());
-            Log::error(" ");
+            Log::error("Validation failed:", (array)$validator->errors());
         }
-        return $validator;
+        $validatedData = $validator->validated();
+        return $this->extractDataIntoDto($validatedData);
+    }
+
+    public function extractDataIntoDto(array $data): RecipeRequestWrapperDTO
+    {
+        $recipe = new RecipeDataDTO($data['title'], $data['description'], $data['difficulty']);
+        $steps = new RecipeStepDTO($data['steps']);
+        $ingredients = new RecipeIngredientDTO($data['ingredients']);
+        $times = array();
+        foreach ($data['times'] as $time) {
+            $times[] = new SingleTimeDTO($time['id'], $time['uom_id'], $time['duration']);
+        }
+        $recipeTimeDto = new RecipeTimeDTO($times);
+        return new RecipeRequestWrapperDTO($recipe, $steps, $ingredients, $recipeTimeDto);
     }
 }
