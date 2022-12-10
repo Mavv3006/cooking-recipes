@@ -14,7 +14,6 @@ use App\Models\Times;
 use App\Models\TimesUnit;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
@@ -56,7 +55,7 @@ class RecipeController extends Controller
         $data = $validator->validated();
         $recipeDataDto = new RecipeDataDTO($data['title'], $data['description'], $data['difficulty']);
         DB::beginTransaction();
-        $recipe = $this->createRecipe($request, $recipeDataDto);
+        $recipe = $this->recipeService->create($request->user(), $recipeDataDto);
         $this->createRecipeSteps($validator, $recipe);
         $this->createRecipeIngredients($validator, $recipe);
         if (sizeof($validator->validated()['times']) > 0) {
@@ -135,11 +134,6 @@ class RecipeController extends Controller
         $recipe->steps()->delete();
         $recipe->steps()->createMany($steps);
         Log::info('All recipe ' . sizeof($steps) . ' steps updated');
-    }
-
-    private function createRecipe(Request $request, RecipeDataDTO $data): Model
-    {
-        return $this->recipeService->create($request->user(), $data);
     }
 
     private function createRecipeIngredients(
