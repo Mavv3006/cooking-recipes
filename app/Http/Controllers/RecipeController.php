@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\DataTransferObjects\RatingsDTO;
-use App\DataTransferObjects\RecipeDTO;
-use App\Models\Ingredient;
+use App\DTOs\Creating\RecipeRequestWrapperDTO;
+use App\DTOs\Extracting\RatingsDTO;
+use App\DTOs\Extracting\RecipeDTO;
 use App\Models\Recipe;
-use App\Models\RecipeIngredient;
-use App\Models\RecipeTimes;
 use App\Models\Times;
 use App\Models\TimesUnit;
+use App\Services\RecipeIngredientService;
+use App\Services\RecipeRequestParsingService;
+use App\Services\RecipeService;
+use App\Services\RecipeStepService;
+use App\Services\RecipeTimeService;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
@@ -25,6 +28,26 @@ use Inertia\Response;
 
 class RecipeController extends Controller
 {
+    protected RecipeService $recipeService;
+    protected RecipeStepService $stepService;
+    protected RecipeIngredientService $ingredientService;
+    protected RecipeTimeService $timeService;
+    protected RecipeRequestParsingService $parsingService;
+
+    public function __construct(
+        RecipeService $recipeService,
+        RecipeStepService $recipeStepService,
+        RecipeIngredientService $recipeIngredientService,
+        RecipeTimeService $recipeTimeService,
+        RecipeRequestParsingService $parsingService
+    ) {
+        $this->recipeService = $recipeService;
+        $this->stepService = $recipeStepService;
+        $this->ingredientService = $recipeIngredientService;
+        $this->timeService = $recipeTimeService;
+        $this->parsingService = $parsingService;
+    }
+
     public function index(): Response
     {
         $recipes = Recipe::with(['user' => fn($query) => $query->select('id', 'name')])
@@ -42,15 +65,14 @@ class RecipeController extends Controller
 
     public function store(Request $request): Application|RedirectResponse|Redirector
     {
-        $validator = $this->validateRecipeParameters($request);
-        $data = $validator->validated();
+        $data = $this->validateRecipeParameters($request);
+        Log::debug('validated data:', (array)$data);
+
         DB::beginTransaction();
-        $recipe = $this->createRecipe($request, $data);
-        $this->createRecipeSteps($validator, $recipe);
-        $this->createRecipeIngredients($validator, $recipe);
-        if (sizeof($validator->validated()['times']) > 0) {
-            $this->createRecipeTimes($validator, $recipe);
-        }
+        $recipe = $this->recipeService->create($request->user(), $data->recipe);
+        $this->stepService->create($recipe, $data->steps);
+        $this->ingredientService->create($recipe, $data->ingredients);
+        $this->timeService->create($recipe, $data->times);
         DB::commit();
 
         return redirect()->route('recipes.show', ['recipe' => $recipe->id]);
@@ -78,13 +100,12 @@ class RecipeController extends Controller
 
     public function update(Request $request, Recipe $recipe): RedirectResponse
     {
-        $validator = $this->validateRecipeParameters($request);
+        $data = $this->validateRecipeParameters($request);
         DB::beginTransaction();
-        $this->updateRecipeSteps($validator, $recipe);
-        $this->updateRecipeIngredients($validator, $recipe);
-        if (sizeof($validator->validated()['times']) > 0) {
-            $this->updateRecipeTimes($validator, $recipe);
-        }
+        $this->recipeService->update($recipe, $data->recipe);
+        $this->stepService->update($recipe, $data->steps);
+        $this->ingredientService->update($recipe, $data->ingredients);
+        $this->timeService->update($recipe, $data->times);
         DB::commit();
 
         return redirect()->route('recipes.show', ['recipe' => $recipe->id]);
@@ -101,128 +122,6 @@ class RecipeController extends Controller
         $recipe->delete();
         Log::info('deleted recipe', ['recipe' => $recipe->id]);
         return redirect()->route('recipes.index');
-    }
-
-    private function createRecipeSteps(
-        \Illuminate\Contracts\Validation\Validator|\Illuminate\Validation\Validator $validator,
-        $recipe
-    ): void {
-        Log::debug('Create steps');
-        $steps = $validator->safe()->only(['steps'])['steps'];
-        Log::debug('steps: ' . json_encode($steps));
-        $recipe->steps()->createMany($steps);
-        Log::info('All recipe ' . sizeof($steps) . ' steps created');
-    }
-
-    private function updateRecipeSteps(
-        \Illuminate\Contracts\Validation\Validator|\Illuminate\Validation\Validator $validator,
-        Recipe $recipe
-    ): void {
-        Log::debug('Update steps');
-        $steps = $validator->safe()->only(['steps'])['steps'];
-        Log::debug('steps: ' . json_encode($steps));
-        $recipe->steps()->delete();
-        $recipe->steps()->createMany($steps);
-        Log::info('All recipe ' . sizeof($steps) . ' steps updated');
-    }
-
-    private function createRecipe(Request $request, array $data): mixed
-    {
-        Log::debug('Create recipe');
-        $recipe = $request->user()->recipes()->create($data);
-        Log::info('Recipe created: ' . $recipe->id);
-        return $recipe;
-    }
-
-    private function createRecipeIngredients(
-        \Illuminate\Contracts\Validation\Validator|\Illuminate\Validation\Validator $validator,
-        Recipe $recipe
-    ): void {
-        Log::debug('Create ingredients');
-        $request_ingredients = $validator->safe()->only('ingredients')['ingredients'];
-        Log::debug('ingredients: ' . json_encode($request_ingredients));
-        foreach ($request_ingredients as $request_ingredient) {
-            $individual_components = preg_split('/\s/', $request_ingredient['description']);
-            Log::debug(json_encode($individual_components));
-            $ingredient = Ingredient::firstOrCreate([
-                'name' => $individual_components[2],
-                'uom' => $individual_components[1]
-            ]);
-            $recipe_ingredient_values = [
-                'quantity' => $individual_components[0],
-                'recipe_id' => $recipe->id,
-                'ingredient_id' => $ingredient->id
-            ];
-            $created_recipe_ingredient = RecipeIngredient::create($recipe_ingredient_values);
-            Log::debug(
-                'Recipe Ingredient for recipe ' . $created_recipe_ingredient->recipe_id . ' and ingredient ' . $created_recipe_ingredient->ingredient_id . ' created.'
-            );
-        }
-        Log::info('all recipe ingredients created');
-    }
-
-    private function updateRecipeIngredients(
-        \Illuminate\Contracts\Validation\Validator|\Illuminate\Validation\Validator $validator,
-        Recipe $recipe
-    ): void {
-        Log::debug('Update ingredients');
-        $request_ingredients = $validator->safe()->only('ingredients')['ingredients'];
-        Log::debug('ingredients: ' . json_encode($request_ingredients));
-        foreach ($request_ingredients as $request_ingredient) {
-            $individual_components = preg_split('/\s/', $request_ingredient['description']);
-            Log::debug(json_encode($individual_components));
-            $ingredient = Ingredient::firstOrCreate([
-                'name' => $individual_components[2],
-                'uom' => $individual_components[1]
-            ]);
-            RecipeIngredient::where('recipe_id', $recipe->id)
-                ->where('ingredient_id', $ingredient->id)
-                ->update(['quantity' => $individual_components[0]]);
-            Log::debug(
-                'Recipe Ingredient for recipe ' . $recipe->id . ' and ingredient ' . $ingredient->id . ' updated.'
-            );
-        }
-        Log::info('all recipe ingredients created');
-    }
-
-    public function createRecipeTimes(
-        \Illuminate\Contracts\Validation\Validator|\Illuminate\Validation\Validator $validator,
-        Recipe $recipe
-    ): void {
-        Log::debug('Create times');
-        $request_times = $validator->safe()->only('times')['times'];
-        Log::debug('times: ' . json_encode($request_times));
-        foreach ($request_times as $time) {
-            $recipe_time = RecipeTimes::create([
-                'recipe_id' => $recipe->id,
-                'times_id' => $time['id'],
-                'times_unit_id' => $time['uom_id'],
-                'duration' => $time['duration']
-            ]);
-            Log::debug(
-                'Recipe time for recipe ' . $recipe_time->recipe_id . ' and time ' . $recipe_time->times_id . ' with duration ' . $recipe_time->duration . ' created.'
-            );
-        }
-        Log::info('all recipe times created');
-    }
-
-    public function updateRecipeTimes(
-        \Illuminate\Contracts\Validation\Validator|\Illuminate\Validation\Validator $validator,
-        Recipe $recipe
-    ): void {
-        Log::debug('Update times');
-        $request_times = $validator->safe()->only('times')['times'];
-        Log::debug('times: ' . json_encode($request_times));
-        foreach ($request_times as $time) {
-            RecipeTimes::where('recipe_id', $recipe->id)
-                ->where('times_id', $time['id'])
-                ->where('times_unit_id', $time['uom_id'])
-                ->update(['duration' => $time['duration']]);
-            Log::debug(
-                'Recipe time for recipe ' . $recipe->id . ' and time ' . $time['id'] . ' with duration ' . $time['duration'] . ' updated.'
-            );
-        }
-        Log::info('all recipe times updated');
     }
 
     private function getStepsOfRecipe(Recipe $recipe): Collection
@@ -307,9 +206,9 @@ class RecipeController extends Controller
         return TimesUnit::select('id', 'short', 'long')->get();
     }
 
-    private function validateRecipeParameters(Request $request
-    ): \Illuminate\Validation\Validator|\Illuminate\Contracts\Validation\Validator {
-        $validator = Validator::make($request->all(), [
+    private function validateRecipeParameters(Request $request): RecipeRequestWrapperDTO
+    {
+        $rules = [
             'title' => 'required|string|max:100',
             'description' => 'required|string|max:255',
             'ingredients' => 'required|array|min:1',
@@ -325,21 +224,20 @@ class RecipeController extends Controller
             ],
             'steps' => 'required|array|min:1',
             'steps.*.description' => 'required|string',
+            'steps.*.id' => 'integer|min:0',
             'difficulty' => ['required', Rule::in(['easy', 'normal', 'hard'])],
             'times' => 'array:id,uom_id,duration',
             'times.*.id' => 'integer|min:0',
             'times.*.uom_id' => 'integer|min:0',
             'times.*.duration' => 'numeric|min:0',
-        ]);
+        ];
+        $validator = Validator::make($request->all(), $rules);
 
-        Log::debug('Content of request:');
-        Log::debug($request->getContent());
-        Log::debug(" ");
+        Log::debug('Content of request:', (array)$request->getContent());
         if ($validator->fails()) {
-            Log::error("Validation failed:");
-            Log::error($validator->errors());
-            Log::error(" ");
+            Log::error("Validation failed:", (array)$validator->errors());
         }
-        return $validator;
+        $validatedData = $validator->validated();
+        return $this->parsingService->extractDataIntoDto($validatedData);
     }
 }

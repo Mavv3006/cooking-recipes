@@ -17,7 +17,8 @@ class Recipe extends Model
         'description',
         'difficulty',
         'prep_time',
-        'prep_time_uom'
+        'prep_time_uom',
+        'user_id'
     ];
 
     public function user(): BelongsTo

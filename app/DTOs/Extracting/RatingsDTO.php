@@ -1,8 +1,10 @@
 <?php
 
-namespace App\DataTransferObjects;
+namespace App\DTOs\Extracting;
 
-class RatingsDTO
+use App\DTOs\DTO;
+
+class RatingsDTO implements DTO
 {
     public function __construct(
         public readonly int $count,
@@ -12,6 +14,6 @@ class RatingsDTO
 
     public function toArray(): array
     {
-        return ['average' => $this->average, 'count' => $this->count];
+        return (array)$this;
     }
 }
