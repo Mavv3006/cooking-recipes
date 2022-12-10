@@ -14,6 +14,6 @@ class RatingsDTO implements DTO
 
     public function toArray(): array
     {
-        return ['average' => $this->average, 'count' => $this->count];
+        return (array)$this;
     }
 }

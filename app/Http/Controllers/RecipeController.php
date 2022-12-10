@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\DTOs\Creating\RecipeDataDTO;
-use App\DTOs\Creating\RecipeService;
+use App\DTOs\Creating\RecipeStepDTO;
 use App\DTOs\Extracting\RatingsDTO;
 use App\DTOs\Extracting\RecipeDTO;
 use App\Models\Ingredient;
@@ -12,6 +12,8 @@ use App\Models\RecipeIngredient;
 use App\Models\RecipeTimes;
 use App\Models\Times;
 use App\Models\TimesUnit;
+use App\Services\RecipeService;
+use App\Services\RecipeStepService;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
@@ -28,10 +30,12 @@ use Inertia\Response;
 class RecipeController extends Controller
 {
     protected RecipeService $recipeService;
+    protected RecipeStepService $recipeStepService;
 
-    public function __construct(RecipeService $recipeService)
+    public function __construct(RecipeService $recipeService, RecipeStepService $recipeStepService)
     {
         $this->recipeService = $recipeService;
+        $this->recipeStepService = $recipeStepService;
     }
 
     public function index(): Response
@@ -53,10 +57,11 @@ class RecipeController extends Controller
     {
         $validator = $this->validateRecipeParameters($request);
         $data = $validator->validated();
-        $recipeDataDto = new RecipeDataDTO($data['title'], $data['description'], $data['difficulty']);
+        $recipeDto = new RecipeDataDTO($data['title'], $data['description'], $data['difficulty']);
+        $recipeStepDto = new RecipeStepDTO($data['steps']);
         DB::beginTransaction();
-        $recipe = $this->recipeService->create($request->user(), $recipeDataDto);
-        $this->createRecipeSteps($validator, $recipe);
+        $recipe = $this->recipeService->create($request->user(), $recipeDto);
+        $this->recipeStepService->create($recipe, $recipeStepDto);
         $this->createRecipeIngredients($validator, $recipe);
         if (sizeof($validator->validated()['times']) > 0) {
             $this->createRecipeTimes($validator, $recipe);
@@ -114,14 +119,9 @@ class RecipeController extends Controller
     }
 
     private function createRecipeSteps(
-        \Illuminate\Contracts\Validation\Validator|\Illuminate\Validation\Validator $validator,
+        array $data,
         $recipe
     ): void {
-        Log::debug('Create steps');
-        $steps = $validator->safe()->only(['steps'])['steps'];
-        Log::debug('steps: ' . json_encode($steps));
-        $recipe->steps()->createMany($steps);
-        Log::info('All recipe ' . sizeof($steps) . ' steps created');
     }
 
     private function updateRecipeSteps(

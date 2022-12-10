@@ -5,7 +5,6 @@ namespace App\DTOs\Extracting;
 use App\DTOs\DTO;
 use App\Models\Recipe;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Auth;
 
 class RecipeDTO implements DTO
 {
@@ -23,17 +22,6 @@ class RecipeDTO implements DTO
 
     public function toArray(): array
     {
-        return [
-            'recipe' => $this->recipe,
-            'ingredients' => $this->ingredients,
-            'steps' => $this->steps,
-            'user' => $this->recipe->user()->first(),
-            'isFavorite' => $this->isFavorite,
-            'isLoggedIn' => Auth::check(),
-            'comments' => $this->comments,
-            'ratings' => $this->ratings,
-            'times' => $this->times,
-            'timeUnitOfMeasures' => $this->timeUnitOfMeasures
-        ];
+        return (array)$this;
     }
 }

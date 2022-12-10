@@ -12,7 +12,7 @@ class RecipeService
     public function create(User $user, RecipeDataDTO $data): Model
     {
         Log::debug('Create recipe');
-        $recipe = $user->recipes()->create($data->toArray());
+        $recipe = $user->recipes()->create((array)$data);
         Log::info('Recipe created: ' . $recipe->id);
         return $recipe;
     }
