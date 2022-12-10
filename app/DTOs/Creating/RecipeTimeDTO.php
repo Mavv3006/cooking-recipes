@@ -3,13 +3,13 @@
 namespace App\DTOs\Creating;
 
 use App\DTOs\DTO;
+use Countable;
 
-class RecipeTimeDTO implements DTO
+class RecipeTimeDTO implements DTO, Countable
 {
     /**
      * @param array $elements An array consisting of {@code SingleTimeDTO} objects
      * @see SingleTimeDTO
-     *
      */
     public function __construct(
         public readonly array $elements

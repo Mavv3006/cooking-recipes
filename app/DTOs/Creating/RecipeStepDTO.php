@@ -7,6 +7,10 @@ use Countable;
 
 class RecipeStepDTO implements DTO, Countable
 {
+    /**
+     * @param array $elements An array consisting of {@code SingleRecipeStepDTO} objects
+     * @see SingleRecipeStepDTO
+     */
     public function __construct(
         public readonly array $elements
     ) {

@@ -46,7 +46,7 @@ class RecipeSeeder extends Seeder
                 ->sequence(fn($sequence) => ['user_id' => $randomUser()->id])
                 ->create(['recipe_id' => $recipe->id]);
 
-            $rating_count = 5;
+            $rating_count = min(User::all()->count(), 5);
             $users = User::all()->random($rating_count);
             Rating::factory()
                 ->count($rating_count)

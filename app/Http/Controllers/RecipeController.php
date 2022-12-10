@@ -2,12 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\DTOs\Creating\RecipeDataDTO;
-use App\DTOs\Creating\RecipeIngredientDTO;
 use App\DTOs\Creating\RecipeRequestWrapperDTO;
-use App\DTOs\Creating\RecipeStepDTO;
-use App\DTOs\Creating\RecipeTimeDTO;
-use App\DTOs\Creating\SingleTimeDTO;
 use App\DTOs\Extracting\RatingsDTO;
 use App\DTOs\Extracting\RecipeDTO;
 use App\Models\Ingredient;
@@ -17,6 +12,7 @@ use App\Models\RecipeTimes;
 use App\Models\Times;
 use App\Models\TimesUnit;
 use App\Services\RecipeIngredientService;
+use App\Services\RecipeRequestParsingService;
 use App\Services\RecipeService;
 use App\Services\RecipeStepService;
 use App\Services\RecipeTimeService;
@@ -39,17 +35,20 @@ class RecipeController extends Controller
     protected RecipeStepService $recipeStepService;
     protected RecipeIngredientService $recipeIngredientService;
     protected RecipeTimeService $recipeTimeService;
+    protected RecipeRequestParsingService $parsingService;
 
     public function __construct(
         RecipeService $recipeService,
         RecipeStepService $recipeStepService,
         RecipeIngredientService $recipeIngredientService,
-        RecipeTimeService $recipeTimeService
+        RecipeTimeService $recipeTimeService,
+        RecipeRequestParsingService $parsingService
     ) {
         $this->recipeService = $recipeService;
         $this->recipeStepService = $recipeStepService;
         $this->recipeIngredientService = $recipeIngredientService;
         $this->recipeTimeService = $recipeTimeService;
+        $this->parsingService = $parsingService;
     }
 
     public function index(): Response
@@ -104,13 +103,15 @@ class RecipeController extends Controller
 
     public function update(Request $request, Recipe $recipe): RedirectResponse
     {
-        $validator = $this->validateRecipeParameters($request);
+        $data = $this->validateRecipeParameters($request);
         DB::beginTransaction();
-        $this->updateRecipeSteps($validator, $recipe);
-        $this->updateRecipeIngredients($validator, $recipe);
-        if (sizeof($validator->validated()['times']) > 0) {
-            $this->updateRecipeTimes($validator, $recipe);
-        }
+        $this->recipeStepService->update($recipe, $data->steps);
+
+//        $this->updateRecipeSteps($validator, $recipe);
+//        $this->updateRecipeIngredients($validator, $recipe);
+//        if (sizeof($validator->validated()['times']) > 0) {
+//            $this->updateRecipeTimes($validator, $recipe);
+//        }
         DB::commit();
 
         return redirect()->route('recipes.show', ['recipe' => $recipe->id]);
@@ -284,6 +285,7 @@ class RecipeController extends Controller
             ],
             'steps' => 'required|array|min:1',
             'steps.*.description' => 'required|string',
+            'steps.*.id' => 'string',
             'difficulty' => ['required', Rule::in(['easy', 'normal', 'hard'])],
             'times' => 'array:id,uom_id,duration',
             'times.*.id' => 'integer|min:0',
@@ -297,19 +299,6 @@ class RecipeController extends Controller
             Log::error("Validation failed:", (array)$validator->errors());
         }
         $validatedData = $validator->validated();
-        return $this->extractDataIntoDto($validatedData);
-    }
-
-    public function extractDataIntoDto(array $data): RecipeRequestWrapperDTO
-    {
-        $recipe = new RecipeDataDTO($data['title'], $data['description'], $data['difficulty']);
-        $steps = new RecipeStepDTO($data['steps']);
-        $ingredients = new RecipeIngredientDTO($data['ingredients']);
-        $times = array();
-        foreach ($data['times'] as $time) {
-            $times[] = new SingleTimeDTO($time['id'], $time['uom_id'], $time['duration']);
-        }
-        $recipeTimeDto = new RecipeTimeDTO($times);
-        return new RecipeRequestWrapperDTO($recipe, $steps, $ingredients, $recipeTimeDto);
+        return $this->parsingService->extractDataIntoDto($validatedData);
     }
 }
