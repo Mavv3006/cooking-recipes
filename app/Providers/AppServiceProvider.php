@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Services\RecipeIngredientService;
 use App\Services\RecipeService;
 use App\Services\RecipeStepService;
+use App\Services\RecipeTimeService;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +20,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(RecipeService::class, RecipeService::class);
         $this->app->bind(RecipeStepService::class, RecipeStepService::class);
         $this->app->bind(RecipeIngredientService::class, RecipeIngredientService::class);
+        $this->app->bind(RecipeTimeService::class, RecipeTimeService::class);
     }
 
     /**

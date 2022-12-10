@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\DTOs\Creating\RecipeDataDTO;
 use App\DTOs\Creating\RecipeIngredientDTO;
 use App\DTOs\Creating\RecipeStepDTO;
+use App\DTOs\Creating\RecipeTimeDTO;
+use App\DTOs\Creating\SingleTimeDTO;
 use App\DTOs\Extracting\RatingsDTO;
 use App\DTOs\Extracting\RecipeDTO;
 use App\Models\Ingredient;
@@ -16,6 +18,7 @@ use App\Models\TimesUnit;
 use App\Services\RecipeIngredientService;
 use App\Services\RecipeService;
 use App\Services\RecipeStepService;
+use App\Services\RecipeTimeService;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
@@ -34,15 +37,18 @@ class RecipeController extends Controller
     protected RecipeService $recipeService;
     protected RecipeStepService $recipeStepService;
     protected RecipeIngredientService $recipeIngredientService;
+    protected RecipeTimeService $recipeTimeService;
 
     public function __construct(
         RecipeService $recipeService,
         RecipeStepService $recipeStepService,
-        RecipeIngredientService $recipeIngredientService
+        RecipeIngredientService $recipeIngredientService,
+        RecipeTimeService $recipeTimeService
     ) {
         $this->recipeService = $recipeService;
         $this->recipeStepService = $recipeStepService;
         $this->recipeIngredientService = $recipeIngredientService;
+        $this->recipeTimeService = $recipeTimeService;
     }
 
     public function index(): Response
@@ -67,13 +73,21 @@ class RecipeController extends Controller
         $recipeDto = new RecipeDataDTO($data['title'], $data['description'], $data['difficulty']);
         $recipeStepDto = new RecipeStepDTO($data['steps']);
         $recipeIngredientDto = new RecipeIngredientDTO($data['ingredients']);
+        $hasTimes = sizeof($data['times']) > 0;
+        if ($hasTimes) {
+            $times = array();
+            foreach ($data['times'] as $time) {
+                $times[] = new SingleTimeDTO($time['id'], $time['uom_id'], $time['duration']);
+            }
+            $recipeTimeDto = new RecipeTimeDTO($times);
+        }
 
         DB::beginTransaction();
         $recipe = $this->recipeService->create($request->user(), $recipeDto);
         $this->recipeStepService->create($recipe, $recipeStepDto);
         $this->recipeIngredientService->create($recipe, $recipeIngredientDto);
-        if (sizeof($data['times']) > 0) {
-            $this->createRecipeTimes($validator, $recipe);
+        if ($hasTimes) {
+            $this->recipeTimeService->create($recipe, $recipeTimeDto);
         }
         DB::commit();
 
@@ -127,12 +141,6 @@ class RecipeController extends Controller
         return redirect()->route('recipes.index');
     }
 
-    private function createRecipeSteps(
-        array $data,
-        $recipe
-    ): void {
-    }
-
     private function updateRecipeSteps(
         \Illuminate\Contracts\Validation\Validator|\Illuminate\Validation\Validator $validator,
         Recipe $recipe
@@ -143,12 +151,6 @@ class RecipeController extends Controller
         $recipe->steps()->delete();
         $recipe->steps()->createMany($steps);
         Log::info('All recipe ' . sizeof($steps) . ' steps updated');
-    }
-
-    private function createRecipeIngredients(
-        \Illuminate\Contracts\Validation\Validator|\Illuminate\Validation\Validator $validator,
-        Recipe $recipe
-    ): void {
     }
 
     private function updateRecipeIngredients(
@@ -173,27 +175,6 @@ class RecipeController extends Controller
             );
         }
         Log::info('all recipe ingredients created');
-    }
-
-    public function createRecipeTimes(
-        \Illuminate\Contracts\Validation\Validator|\Illuminate\Validation\Validator $validator,
-        Recipe $recipe
-    ): void {
-        Log::debug('Create times');
-        $request_times = $validator->safe()->only('times')['times'];
-        Log::debug('times: ' . json_encode($request_times));
-        foreach ($request_times as $time) {
-            $recipe_time = RecipeTimes::create([
-                'recipe_id' => $recipe->id,
-                'times_id' => $time['id'],
-                'times_unit_id' => $time['uom_id'],
-                'duration' => $time['duration']
-            ]);
-            Log::debug(
-                'Recipe time for recipe ' . $recipe_time->recipe_id . ' and time ' . $recipe_time->times_id . ' with duration ' . $recipe_time->duration . ' created.'
-            );
-        }
-        Log::info('all recipe times created');
     }
 
     public function updateRecipeTimes(
