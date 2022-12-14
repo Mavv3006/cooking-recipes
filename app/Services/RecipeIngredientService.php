@@ -29,7 +29,8 @@ class RecipeIngredientService
 
     private function createIngredients(RecipeIngredientDTO $data, Recipe $recipe): void
     {
-        foreach ($data as $request_ingredient) {
+        $ingredients = array_map(fn($value) => (array)$value, $data->elements);
+        foreach ($ingredients as $request_ingredient) {
             $individual_components = preg_split('/\s/', $request_ingredient['description']);
             Log::debug(json_encode($individual_components));
             $ingredient = Ingredient::firstOrCreate([

@@ -6,7 +6,7 @@ use App\DTOs\DTO;
 use App\Models\RecipeTimes;
 use App\Models\TimesUnit;
 
-class SingleTimeDTO implements DTO
+class SingleTimeDTO extends DTO
 {
     /**
      * @param int $id The identifier for the referenced Time object

@@ -4,7 +4,7 @@ namespace App\DTOs\Creating;
 
 use App\DTOs\DTO;
 
-class SingleRecipeStepDTO implements DTO
+class SingleRecipeStepDTO extends DTO
 {
     public function __construct(
         public readonly string $description,

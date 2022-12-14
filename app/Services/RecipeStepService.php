@@ -12,7 +12,8 @@ class RecipeStepService
     {
         Log::debug('Create steps');
         Log::debug('steps: ' . json_encode((array)$data));
-        $recipe->steps()->createMany((array)$data);
+        $steps = array_map(fn($value) => (array)$value, $data->elements);
+        $recipe->steps()->createMany($steps);
         Log::info('All recipe ' . sizeof($data) . ' steps created');
     }
 
@@ -33,7 +34,8 @@ class RecipeStepService
         Log::debug('Update steps');
         Log::debug('steps: ', (array)$data);
         $recipe->steps()->delete();
-        $recipe->steps()->createMany((array)$data);
+        $steps = array_map(fn($value) => (array)$value, $data->elements);
+        $recipe->steps()->createMany($steps);
         Log::info('All recipe ' . sizeof($data) . ' steps updated');
     }
 }

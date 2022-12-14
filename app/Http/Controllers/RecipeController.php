@@ -49,6 +49,7 @@ class RecipeController extends Controller
 
     public function index(): Response
     {
+        $this->authorize('viewAny', Recipe::class);
         $recipes = Recipe::with(['user' => fn($query) => $query->select('id', 'name')])
             ->select('id', 'title', 'description', 'difficulty', 'user_id')
             ->get();
@@ -57,6 +58,7 @@ class RecipeController extends Controller
 
     public function create(): Response
     {
+        $this->authorize('create', Recipe::class);
         $times = Times::select('id', 'name')->get();
         $uoms = $this->extractingService->getTimeUnitOfMeasures();
         return Inertia::render('Recipes/Create', ['times' => $times, 'uoms' => $uoms]);
@@ -64,6 +66,7 @@ class RecipeController extends Controller
 
     public function store(Request $request): Application|RedirectResponse|Redirector
     {
+        $this->authorize('create', Recipe::class);
         $data = $this->validateRecipeParameters($request);
 
         DB::beginTransaction();
@@ -78,6 +81,7 @@ class RecipeController extends Controller
 
     public function show(Recipe $recipe): Response
     {
+        $this->authorize('view', $recipe);
         $props = $this->extractingService->getRecipeDTO($recipe);
 
         return Inertia::render('Recipes/Show', $props->toArray());
@@ -91,6 +95,7 @@ class RecipeController extends Controller
      */
     public function edit(Recipe $recipe)
     {
+        $this->authorize('update', $recipe);
         $props = $this->extractingService->getRecipeDTO($recipe);
 
         return Inertia::render('Recipes/Edit', $props->toArray());
@@ -98,6 +103,7 @@ class RecipeController extends Controller
 
     public function update(Request $request, Recipe $recipe): RedirectResponse
     {
+        $this->authorize('update', $recipe);
         $data = $this->validateRecipeParameters($request);
 
         DB::beginTransaction();
@@ -118,6 +124,7 @@ class RecipeController extends Controller
      */
     public function destroy(Recipe $recipe): RedirectResponse
     {
+        $this->authorize('delete', $recipe);
         $recipe->delete();
         Log::info('deleted recipe', ['recipe' => $recipe->id]);
         return redirect()->route('recipes.index');
@@ -150,10 +157,10 @@ class RecipeController extends Controller
         ];
         $validator = Validator::make($request->all(), $rules);
 
-        Log::debug('Content of request:', (array)$request->getContent());
-        if ($validator->fails()) {
-            Log::error("Validation failed:", (array)$validator->errors());
-        }
+//        Log::debug('Content of request:', (array)$request->getContent());
+//        if ($validator->fails()) {
+//            Log::error("Validation failed:", (array)$validator->errors());
+//        }
         $validatedData = $validator->validated();
         return $this->parsingService->extractDataIntoDto($validatedData);
     }

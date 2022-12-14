@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Controllers;
+namespace Http\Controllers;
 
 use App\Models\Recipe;
 use App\Models\Times;
@@ -89,8 +89,10 @@ class RecipeControllerTest extends TestCase
     {
         $this->seed(TimesUnitSeeder::class);
         $this->seed(RecipeSeeder::class);
+        $user_id = Recipe::where('id', 1)->get()->first()->user_id;
+        $user = User::where('id', $user_id)->get()->first();
 
-        $response = $this->actingAs(User::factory()->create())->get('recipes/1/edit');
+        $response = $this->actingAs($user)->get('recipes/1/edit');
 
         $response->assertOk();
         $response->assertInertia(fn(AssertableInertia $page) => $page
