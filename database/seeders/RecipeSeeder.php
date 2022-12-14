@@ -54,6 +54,11 @@ class RecipeSeeder extends Seeder
                 ->create(['recipe_id' => $recipe->id]);
 
             $times_count = 3;
+            $current_times_count = Times::all()->count();
+            if ($current_times_count < 3) {
+                $diff = 3 - $current_times_count;
+                Times::factory()->count($diff)->create();
+            }
             $times = Times::all()->random($times_count);
             RecipeTimes::factory()
                 ->count($times_count)

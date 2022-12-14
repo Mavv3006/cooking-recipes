@@ -3,22 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\DTOs\Creating\RecipeRequestWrapperDTO;
-use App\DTOs\Extracting\RatingsDTO;
-use App\DTOs\Extracting\RecipeDTO;
 use App\Models\Recipe;
 use App\Models\Times;
-use App\Models\TimesUnit;
+use App\Services\RecipeExtractingService;
 use App\Services\RecipeIngredientService;
 use App\Services\RecipeRequestParsingService;
 use App\Services\RecipeService;
 use App\Services\RecipeStepService;
 use App\Services\RecipeTimeService;
 use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -33,19 +29,22 @@ class RecipeController extends Controller
     protected RecipeIngredientService $ingredientService;
     protected RecipeTimeService $timeService;
     protected RecipeRequestParsingService $parsingService;
+    protected RecipeExtractingService $extractingService;
 
     public function __construct(
         RecipeService $recipeService,
         RecipeStepService $recipeStepService,
         RecipeIngredientService $recipeIngredientService,
         RecipeTimeService $recipeTimeService,
-        RecipeRequestParsingService $parsingService
+        RecipeRequestParsingService $parsingService,
+        RecipeExtractingService $extractingService
     ) {
         $this->recipeService = $recipeService;
         $this->stepService = $recipeStepService;
         $this->ingredientService = $recipeIngredientService;
         $this->timeService = $recipeTimeService;
         $this->parsingService = $parsingService;
+        $this->extractingService = $extractingService;
     }
 
     public function index(): Response
@@ -59,14 +58,13 @@ class RecipeController extends Controller
     public function create(): Response
     {
         $times = Times::select('id', 'name')->get();
-        $uoms = $this->getTimeUnitOfMeasures();
+        $uoms = $this->extractingService->getTimeUnitOfMeasures();
         return Inertia::render('Recipes/Create', ['times' => $times, 'uoms' => $uoms]);
     }
 
     public function store(Request $request): Application|RedirectResponse|Redirector
     {
         $data = $this->validateRecipeParameters($request);
-        Log::debug('validated data:', (array)$data);
 
         DB::beginTransaction();
         $recipe = $this->recipeService->create($request->user(), $data->recipe);
@@ -80,7 +78,7 @@ class RecipeController extends Controller
 
     public function show(Recipe $recipe): Response
     {
-        $props = $this->getRecipeDTO($recipe);
+        $props = $this->extractingService->getRecipeDTO($recipe);
 
         return Inertia::render('Recipes/Show', $props->toArray());
     }
@@ -93,7 +91,7 @@ class RecipeController extends Controller
      */
     public function edit(Recipe $recipe)
     {
-        $props = $this->getRecipeDTO($recipe);
+        $props = $this->extractingService->getRecipeDTO($recipe);
 
         return Inertia::render('Recipes/Edit', $props->toArray());
     }
@@ -101,6 +99,7 @@ class RecipeController extends Controller
     public function update(Request $request, Recipe $recipe): RedirectResponse
     {
         $data = $this->validateRecipeParameters($request);
+
         DB::beginTransaction();
         $this->recipeService->update($recipe, $data->recipe);
         $this->stepService->update($recipe, $data->steps);
@@ -122,88 +121,6 @@ class RecipeController extends Controller
         $recipe->delete();
         Log::info('deleted recipe', ['recipe' => $recipe->id]);
         return redirect()->route('recipes.index');
-    }
-
-    private function getStepsOfRecipe(Recipe $recipe): Collection
-    {
-        return $recipe
-            ->steps()
-            ->orderBy('id')
-            ->select('description')
-            ->get();
-    }
-
-    private function getIngredientsOfRecipe(Recipe $recipe): \Illuminate\Support\Collection
-    {
-        return DB::table('recipes')
-            ->join('recipe_ingredients', 'recipes.id', '=', 'recipe_ingredients.recipe_id')
-            ->join('ingredients', 'recipe_ingredients.ingredient_id', '=', 'ingredients.id')
-            ->where('recipes.id', $recipe->id)
-            ->select(['quantity', 'uom', 'name'])
-            ->get();
-    }
-
-    private function whetherTheRecipeIsAFavoriteForTheLoggedInUser(Recipe $recipe): bool
-    {
-        $is_favorite = null;
-        $is_logged_in = Auth::check();
-        if ($is_logged_in) {
-            $favorite = Auth::user()
-                ->favorites()
-                ->where('id', $recipe->id)
-                ->first();
-            $is_favorite = !($favorite == null);
-        }
-        return $is_favorite ?? false;
-    }
-
-    private function getCommentsOfRecipe(Recipe $recipe): Collection
-    {
-        return $recipe->comments()
-            ->with(['user' => fn($query) => $query->select('id', 'name')])
-            ->orderBy('created_at')
-            ->select('comment', 'created_at', 'updated_at', 'user_id', 'id')
-            ->get();
-    }
-
-    private function getRatingsOfRecipe(Recipe $recipe): RatingsDTO
-    {
-        return $recipe->ratings()
-            ->get()
-            ->pipe(fn($collection) => new RatingsDTO($collection->count('stars'), $collection->avg('stars')));
-    }
-
-    private function getTimesOfRecipe(Recipe $recipe): Collection
-    {
-        return $recipe->recipeTimes()
-            ->with([
-                'time' => fn($query) => $query->select('id', 'name'),
-                'timesUnit' => fn($query) => $query->select('id', 'short', 'long')
-            ])
-            ->get()
-            ->filter(function ($value) {
-                return $value['time'] != null;
-            });
-    }
-
-    /// Todo: refactor into service container (also move called methods)
-    private function getRecipeDTO(Recipe $recipe): RecipeDTO
-    {
-        return new RecipeDTO(
-            $this->getIngredientsOfRecipe($recipe),
-            $this->getStepsOfRecipe($recipe),
-            $this->getCommentsOfRecipe($recipe),
-            $this->getTimesOfRecipe($recipe),
-            $this->getRatingsOfRecipe($recipe),
-            $this->whetherTheRecipeIsAFavoriteForTheLoggedInUser($recipe),
-            $recipe,
-            $this->getTimeUnitOfMeasures()
-        );
-    }
-
-    private function getTimeUnitOfMeasures(): Collection
-    {
-        return TimesUnit::select('id', 'short', 'long')->get();
     }
 
     private function validateRecipeParameters(Request $request): RecipeRequestWrapperDTO

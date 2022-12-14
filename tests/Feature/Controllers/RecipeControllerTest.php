@@ -6,6 +6,7 @@ use App\Models\Recipe;
 use App\Models\Times;
 use App\Models\TimesUnit;
 use App\Models\User;
+use Database\Seeders\RecipeSeeder;
 use Database\Seeders\TimesUnitSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
@@ -68,5 +69,44 @@ class RecipeControllerTest extends TestCase
                 ])
             )
         );
+    }
+
+    public function test_show_single_recipe()
+    {
+        $this->seed(TimesUnitSeeder::class);
+        $this->seed(RecipeSeeder::class);
+
+        $response = $this->actingAs(User::factory()->create())->get('recipes/1');
+
+        $response->assertOk();
+        $response->assertInertia(fn(AssertableInertia $page) => $page
+            ->component('Recipes/Show')
+            ->hasAll('times', 'comments', 'steps', 'ingredients', 'recipe', 'timeUnitOfMeasures', 'isFavorite')
+        );
+    }
+
+    public function test_show_recipe_edit_form()
+    {
+        $this->seed(TimesUnitSeeder::class);
+        $this->seed(RecipeSeeder::class);
+
+        $response = $this->actingAs(User::factory()->create())->get('recipes/1/edit');
+
+        $response->assertOk();
+        $response->assertInertia(fn(AssertableInertia $page) => $page
+            ->component('Recipes/Edit')
+            ->hasAll('times', 'comments', 'steps', 'ingredients', 'recipe', 'timeUnitOfMeasures', 'isFavorite')
+        );
+    }
+
+    public function test_delete_recipe()
+    {
+        $user = User::factory()->create();
+        Recipe::factory()->for($user)->create();
+
+        $response = $this->actingAs($user)->delete('recipes/1');
+
+        $response->assertRedirect(route('recipes.index'));
+        $this->assertDatabaseCount((new Recipe())->getTable(), 0);
     }
 }
