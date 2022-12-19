@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Rating;
+use App\Models\Recipe;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,7 +18,7 @@ class RatingController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  Request  $request
+     * @param Request $request
      * @return RedirectResponse
      * @throws AuthorizationException
      * @throws ValidationException
@@ -50,45 +51,22 @@ class RatingController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  Request  $request
-     * @param  Rating  $rating
-     * @return RedirectResponse
-     * @throws AuthorizationException
-     * @throws ValidationException
-     */
-    public function update(Request $request, Rating $rating): RedirectResponse
-    {
-        $this->authorize('update', $rating);
-
-        $validator = Validator::make($request->all(), [
-            'stars' => ['required', Rule::in(range(1, 5))],
-        ]);
-
-        $data = $validator->validate();
-
-        Log::info('Updating rating ' . $rating->id);
-        $rating->update($data);
-
-        return back();
-    }
-
-    /**
      * Remove the specified resource from storage.
      *
-     * @param  Rating  $rating
+     * @param Recipe $recipe
      * @return RedirectResponse
      * @throws AuthorizationException
      */
-    public function destroy(Rating $rating): RedirectResponse
+    public function destroy(Recipe $recipe): RedirectResponse
     {
+        $rating = Rating::where('user_id', Auth::id())
+            ->where('recipe_id', $recipe->id)
+            ->first();
         $this->authorize('delete', $rating);
 
-        $recipe_id = $rating->recipe_id;
         Log::info('Deleting rating ' . $rating->id);
-        $rating->delete();
+        Auth::user()->ratings()->detach($recipe->id);
 
-        return redirect()->route('recipes.show', ['recipe' => $recipe_id]);
+        return redirect()->route('recipes.show', ['recipe' => $recipe->id]);
     }
 }

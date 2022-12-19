@@ -71,7 +71,7 @@ class RecipeExtractingService
     {
         return $recipe->ratings()
             ->get()
-            ->pipe(fn($collection) => new RatingsDTO($collection->count('stars'), $collection->avg('stars')));
+            ->pipe(fn($collection) => new RatingsDTO($collection->count('stars') ?? 0, $collection->avg('stars') ?? 0));
     }
 
     public function whetherTheRecipeIsAFavoriteForTheLoggedInUser(Recipe $recipe): bool
