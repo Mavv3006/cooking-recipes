@@ -62,6 +62,12 @@ const deleteRecipe = () => {
             >
                 Rezept bearbeiten
             </Link>
+            <Link v-if="usePage().props.value.auth?.user?.id !== null"
+                  :href="route('image.create', {'recipe': recipe.id})"
+                  class="block items-center px-3 mb-3 py-1 bg-gray-200 border border-transparent rounded-md hover:bg-gray-100 active:bg-gray-300 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25 transition"
+            >
+                Bild hochladen
+            </Link>
 
             <RatingForm :recipe_id="recipe.id"/>
 
