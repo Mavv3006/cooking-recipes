@@ -5,7 +5,7 @@ namespace App\DTOs\Creating;
 use App\DTOs\DTO;
 use Countable;
 
-class RecipeIngredientDTO implements DTO, Countable
+class RecipeIngredientDTO extends DTO implements Countable
 {
     public function __construct(
         public readonly array $elements

@@ -79,4 +79,9 @@ class User extends Authenticatable
             ->using(Favorites::class)
             ->withTimestamps();
     }
+
+    public function isAuthorOf(Recipe $recipe): bool
+    {
+        return $this->id === $recipe->user_id;
+    }
 }

@@ -4,7 +4,7 @@ namespace App\DTOs\Creating;
 
 use App\DTOs\DTO;
 
-class RecipeDataDTO implements DTO
+class RecipeDataDTO extends DTO
 {
     public function __construct(
         public readonly string $title,

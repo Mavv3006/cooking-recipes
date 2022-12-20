@@ -6,7 +6,7 @@ use App\DTOs\DTO;
 use App\Models\Recipe;
 use Illuminate\Database\Eloquent\Collection;
 
-class RecipeDTO implements DTO
+class RecipeDTO extends DTO
 {
     public function __construct(
         public readonly \Illuminate\Support\Collection $ingredients,
@@ -18,10 +18,5 @@ class RecipeDTO implements DTO
         public readonly Recipe $recipe,
         public readonly ?Collection $timeUnitOfMeasures
     ) {
-    }
-
-    public function toArray(): array
-    {
-        return (array)$this;
     }
 }

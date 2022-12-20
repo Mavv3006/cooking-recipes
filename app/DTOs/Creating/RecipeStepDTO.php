@@ -5,7 +5,7 @@ namespace App\DTOs\Creating;
 use App\DTOs\DTO;
 use Countable;
 
-class RecipeStepDTO implements DTO, Countable
+class RecipeStepDTO extends DTO implements Countable
 {
     /**
      * @param array $elements An array consisting of {@code SingleRecipeStepDTO} objects

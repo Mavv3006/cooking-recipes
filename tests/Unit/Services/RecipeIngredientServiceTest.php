@@ -20,7 +20,7 @@ class RecipeIngredientServiceTest extends TestCase
     public function testCreate()
     {
         $recipe = Recipe::factory()->for(User::factory())->create();
-        $dto = new RecipeIngredientDTO(['description' => '1 g bla_bla']);
+        $dto = new RecipeIngredientDTO([['description' => '1 g bla_bla']]);
 
         $this->service->create($recipe, $dto);
 
@@ -30,10 +30,10 @@ class RecipeIngredientServiceTest extends TestCase
     public function testUpdate()
     {
         $recipe = Recipe::factory()->for(User::factory())->create();
-        $dto = new RecipeIngredientDTO(['description' => '1 g bla_bla']);
+        $dto = new RecipeIngredientDTO([['description' => '1 g bla_bla']]);
         $this->service->create($recipe, $dto);
 
-        $this->service->update($recipe, new RecipeIngredientDTO(['description' => '2 g hi_hi']));
+        $this->service->update($recipe, new RecipeIngredientDTO([['description' => '2 g hi_hi']]));
 
         $this->assertDatabaseCount((new RecipeIngredient())->getTable(), 1);
         $this->assertEquals('2', RecipeIngredient::all()->first()->quantity);

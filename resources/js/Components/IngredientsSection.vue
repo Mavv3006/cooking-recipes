@@ -21,20 +21,8 @@ const props = defineProps({
     <!--        <span>Portionen</span>-->
     <!--    </div>-->
 
-    <table>
-        <thead>
-        <tr>
-            <td>Anzahl</td>
-            <td>Einheit</td>
-            <td>Beschreibung (+Plural)</td>
-        </tr>
-        </thead>
-        <tbody>
-        <tr v-for="ingredient in ingredients">
-            <td>{{ ingredient.quantity }}</td>
-            <td>{{ ingredient.uom }}</td>
-            <td>{{ ingredient.name }}</td>
-        </tr>
-        </tbody>
-    </table>
+    <div v-for="ingredient in ingredients" class="flex space-x-4 mx-8">
+        <div class="text-right">{{ ingredient.quantity }} {{ ingredient.uom }}</div>
+        <div>{{ ingredient.name }}</div>
+    </div>
 </template>

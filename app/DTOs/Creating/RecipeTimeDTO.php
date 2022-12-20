@@ -5,7 +5,7 @@ namespace App\DTOs\Creating;
 use App\DTOs\DTO;
 use Countable;
 
-class RecipeTimeDTO implements DTO, Countable
+class RecipeTimeDTO extends DTO implements Countable
 {
     /**
      * @param array $elements An array consisting of {@code SingleTimeDTO} objects

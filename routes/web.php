@@ -38,7 +38,7 @@ Route::prefix('ratings')
     ->group(function () {
         Route::post('', [RatingController::class, 'store'])
             ->name('ratings.create');
-        Route::delete('/{rating}', [RatingController::class, 'destroy'])
+        Route::delete('/{recipe}', [RatingController::class, 'destroy'])
             ->name('ratings.delete');
     });
 

@@ -10,8 +10,8 @@ const props = defineProps({
 <template>
     <SectionHeading>Zubereitung</SectionHeading>
 
-    <div v-for="(step, index) in steps">
-        <div>{{ index }}</div>
+    <div v-for="(step, index) in steps" class="mb-2">
+        <div class="italic">Schritt No. {{ index }}</div>
         <div>{{ step.description }}</div>
     </div>
 </template>
