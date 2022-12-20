@@ -8,6 +8,7 @@ import Author from "@/Components/Author.vue";
 import CommentSection from "@/Components/CommentSection.vue";
 import RatingForm from '@/Components/RatingForm.vue';
 import {computed} from "vue";
+import ImageViewer from "@/Components/ImageViewer.vue";
 
 const props = defineProps({
     recipe: Object,
@@ -18,8 +19,11 @@ const props = defineProps({
     isLoggedIn: Boolean,
     comments: Array,
     ratings: Object,
-    times: Object
+    times: Object,
+    images: Array
 });
+
+console.debug(props.images);
 
 const isAuthor = computed(() => props.recipe.user_id === usePage().props.value.auth?.user?.id);
 
@@ -42,6 +46,10 @@ const deleteRecipe = () => {
             :ratings="ratings"
             :title="recipe.title"
             @toggle-favorite="toggleFavorite"/>
+
+        <hr>
+
+        <ImageViewer v-if="images !== undefined"/>
 
         <hr>
 
