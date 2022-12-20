@@ -16,7 +16,8 @@ class RecipeDTO extends DTO
         public readonly RatingsDTO $ratings,
         public readonly bool $isFavorite,
         public readonly Recipe $recipe,
-        public readonly ?Collection $timeUnitOfMeasures
+        public readonly ?Collection $timeUnitOfMeasures,
+        public readonly Collection $images
     ) {
     }
 }

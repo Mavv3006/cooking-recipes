@@ -6,6 +6,7 @@ use App\DTOs\Extracting\RatingsDTO;
 use App\DTOs\Extracting\RecipeDTO;
 use App\Models\Comment;
 use App\Models\Favorites;
+use App\Models\Image;
 use App\Models\Ingredient;
 use App\Models\Rating;
 use App\Models\Recipe;
@@ -16,6 +17,7 @@ use App\Models\TimesUnit;
 use App\Models\User;
 use App\Services\RecipeExtractingService;
 use Database\Seeders\TimesUnitSeeder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -191,6 +193,20 @@ class RecipeExtractingServiceTest extends TestCase
         $this->assertNotNull($dto->isFavorite);
         $this->assertNotNull($dto->recipe);
         $this->assertNotNull($dto->timeUnitOfMeasures);
+        $this->assertNotNull($dto->images);
+    }
+
+    public function testRetrievingImages()
+    {
+        $user = User::factory()->create();
+        $recipe = Recipe::factory()->for($user)->create();
+        Image::factory()->for($user)->for($recipe)->create();
+
+        $images = $this->service->getImagesFor($recipe);
+
+        $this->assertNotNull($images);
+        $this->assertInstanceOf(Collection::class, $images);
+        $this->assertNull($images[0]->description);
     }
 
     protected function setUp(): void

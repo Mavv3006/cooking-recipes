@@ -49,7 +49,7 @@ const deleteRecipe = () => {
 
         <hr>
 
-        <ImageViewer v-if="images !== undefined"/>
+        <ImageViewer v-if="images !== undefined" :images="images"/>
 
         <hr>
 

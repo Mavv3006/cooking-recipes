@@ -59,17 +59,6 @@ class ImageController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param Image $image
-     * @return Response
-     */
-    public function show(Image $image)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      *
      * @param Request $request
