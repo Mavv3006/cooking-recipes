@@ -18,7 +18,7 @@ class HandleInertiaRequests extends Middleware
     /**
      * Determine the current asset version.
      *
-     * @param  Request  $request
+     * @param Request $request
      * @return string|null
      */
     public function version(Request $request): ?string
@@ -29,7 +29,7 @@ class HandleInertiaRequests extends Middleware
     /**
      * Define the props that are shared by default.
      *
-     * @param  Request  $request
+     * @param Request $request
      * @return array
      */
     public function share(Request $request): array
@@ -42,6 +42,9 @@ class HandleInertiaRequests extends Middleware
             },
             'auth.user' => fn() => $request->user()
                 ? $request->user()->only('id', 'name', 'email')
+                : null,
+            'recipe.id' => fn() => $request->routeIs('recipes.show')
+                ? $request->segment(1)
                 : null,
         ]);
     }
