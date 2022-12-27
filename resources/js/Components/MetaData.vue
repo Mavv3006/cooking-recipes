@@ -49,13 +49,13 @@ const formatCreationDate = (date) => dayjs(date).format('DD.MM.YYYY');
         </div>
     </div>
 
-    <div class="mt-4 hover:cursor-pointer w-fit" @click="$emit('scrollToComments')">
+    <div class="mt-4 hover:cursor-pointer w-fit hover:underline" @click="$emit('scrollToComments')">
         {{ comments_count }} Kommentare
     </div>
 
     <div class="mt-4 flex space-x-4 text-sm">
-        <div class="bg-green-900/20 px-4 rounded-full py-1">{{ difficulty }}</div>
-        <div class="bg-green-900/20 px-4 rounded-full py-1">
+        <div class="bg-green-900/20 hover:bg-green-900/10 transition px-4 rounded-full py-1">{{ difficulty }}</div>
+        <div class="bg-green-900/20 hover:bg-green-900/10 transition px-4 rounded-full py-1">
             <i class="fa-solid fa-calendar-days mr-1"></i>
             {{ formatCreationDate(creation_date) }}
         </div>

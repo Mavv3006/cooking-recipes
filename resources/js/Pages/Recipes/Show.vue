@@ -17,7 +17,7 @@ const props = defineProps({
     isLoggedIn: Boolean,
     comments: Array,
     ratings: Object,
-    times: Object
+    times: Object,
 });
 
 const isAuthor = computed(() => props.recipe.user_id === usePage().props.value.auth?.user?.id);
@@ -27,7 +27,6 @@ const deleteRecipe = () => {
 }
 
 const scrollToComments = () => {
-    console.debug("scrolling to comments clicked");
     document.getElementById('comments').scrollIntoView({behavior: "smooth", block: "start"});
 }
 </script>
@@ -66,17 +65,6 @@ const scrollToComments = () => {
         <!--            </Link>-->
 
         <!--            <RatingForm :recipe_id="recipe.id"/>-->
-
-        <!--            <div v-if="times.length>0" class="mt-2">-->
-        <!--                Zeiten:-->
-        <!--                <div class="flex space-x-4">-->
-        <!--                    <span v-for="time in times" class="bg-gray-100 px-3 py-1 rounded-full hover:bg-gray-200">-->
-        <!--                       {{ time.time.name }}: {{-->
-        <!--                            time.duration-->
-        <!--                        }} {{ time.duration > 1 ? time.times_unit.long + 'n' : time.times_unit.long }}-->
-        <!--                    </span>-->
-        <!--                </div>-->
-        <!--            </div>-->
         <!--        </section>-->
         <!---->
         <!--        <hr>-->

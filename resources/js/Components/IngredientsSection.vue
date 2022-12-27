@@ -23,7 +23,7 @@ const props = defineProps({
 
     <div class="mt-4">
         <div v-for="ingredient in ingredients"
-             class="flex space-x-4 odd:bg-green-900/20 odd:rounded-lg mt-1 first:mt-0 py-1">
+             class="flex space-x-4 odd:bg-green-900/20 rounded-lg mt-1 first:mt-0 py-1 hover:bg-green-900/10 transition">
             <div class="text-right basis-1/4">{{ ingredient.quantity }} {{ ingredient.uom }}</div>
             <div class="basis-3/4">{{ ingredient.name }}</div>
         </div>

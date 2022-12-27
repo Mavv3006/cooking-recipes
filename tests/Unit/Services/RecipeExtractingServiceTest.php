@@ -16,6 +16,7 @@ use App\Models\TimesUnit;
 use App\Models\User;
 use App\Services\RecipeExtractingService;
 use Database\Seeders\TimesUnitSeeder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -191,6 +192,20 @@ class RecipeExtractingServiceTest extends TestCase
         $this->assertNotNull($dto->isFavorite);
         $this->assertNotNull($dto->recipe);
         $this->assertNotNull($dto->timeUnitOfMeasures);
+        $this->assertNotNull($dto->author);
+    }
+
+    public function testGetAuthor()
+    {
+        $user = User::factory()->create();
+        $recipe = Recipe::factory()->for($user)->create();
+
+        $dto = $this->service->getAuthorOfRecipe($recipe);
+
+        $this->assertEquals($user->id, $dto->id);
+        $this->assertEquals($user->name, $dto->name);
+        $this->assertInstanceOf(Model::class, $dto);
+        $this->assertInstanceOf(User::class, $dto);
     }
 
     protected function setUp(): void
