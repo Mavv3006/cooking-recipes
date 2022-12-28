@@ -21,8 +21,11 @@ const props = defineProps({
     <!--        <span>Portionen</span>-->
     <!--    </div>-->
 
-    <div v-for="ingredient in ingredients" class="flex space-x-4 mx-8">
-        <div class="text-right">{{ ingredient.quantity }} {{ ingredient.uom }}</div>
-        <div>{{ ingredient.name }}</div>
+    <div class="mt-4">
+        <div v-for="ingredient in ingredients"
+             class="flex space-x-4 odd:bg-green-900/20 rounded-lg mt-1 first:mt-0 py-1 hover:bg-green-900/10 transition">
+            <div class="text-right basis-1/4">{{ ingredient.quantity }} {{ ingredient.uom }}</div>
+            <div class="basis-3/4">{{ ingredient.name }}</div>
+        </div>
     </div>
 </template>

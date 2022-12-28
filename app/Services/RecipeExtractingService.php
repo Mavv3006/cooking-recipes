@@ -8,6 +8,7 @@ use App\Models\Image;
 use App\Models\Recipe;
 use App\Models\TimesUnit;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -24,6 +25,7 @@ class RecipeExtractingService
             $this->whetherTheRecipeIsAFavoriteForTheLoggedInUser($recipe),
             $recipe,
             $this->getTimeUnitOfMeasures(),
+            $this->getAuthorOfRecipe($recipe),
             $this->getImagesFor($recipe)
         );
     }
@@ -95,6 +97,11 @@ class RecipeExtractingService
         return TimesUnit::select('id', 'short', 'long')->get();
     }
 
+    public function getAuthorOfRecipe(Recipe $recipe): Model
+    {
+        return $recipe->user()->getResults();
+    }
+    
     public function getImagesFor(Recipe $recipe): Collection
     {
         return Image::whereBelongsTo($recipe)
