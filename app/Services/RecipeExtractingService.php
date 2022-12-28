@@ -7,6 +7,7 @@ use App\DTOs\Extracting\RecipeDTO;
 use App\Models\Recipe;
 use App\Models\TimesUnit;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -22,7 +23,8 @@ class RecipeExtractingService
             $this->getRatingsOfRecipe($recipe),
             $this->whetherTheRecipeIsAFavoriteForTheLoggedInUser($recipe),
             $recipe,
-            $this->getTimeUnitOfMeasures()
+            $this->getTimeUnitOfMeasures(),
+            $this->getAuthorOfRecipe($recipe),
         );
     }
 
@@ -91,5 +93,10 @@ class RecipeExtractingService
     public function getTimeUnitOfMeasures(): Collection
     {
         return TimesUnit::select('id', 'short', 'long')->get();
+    }
+
+    public function getAuthorOfRecipe(Recipe $recipe): Model
+    {
+        return $recipe->user()->getResults();
     }
 }
