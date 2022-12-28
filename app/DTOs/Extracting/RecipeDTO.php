@@ -5,6 +5,7 @@ namespace App\DTOs\Extracting;
 use App\DTOs\DTO;
 use App\Models\Recipe;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 
 class RecipeDTO extends DTO
 {
@@ -17,7 +18,8 @@ class RecipeDTO extends DTO
         public readonly bool $isFavorite,
         public readonly Recipe $recipe,
         public readonly ?Collection $timeUnitOfMeasures,
-        public readonly Collection $images
+        public readonly Collection $images,
+        public readonly Model $user,
     ) {
     }
 }

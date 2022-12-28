@@ -4,10 +4,10 @@ namespace App\Services;
 
 use App\DTOs\Extracting\RatingsDTO;
 use App\DTOs\Extracting\RecipeDTO;
-use App\Models\Image;
 use App\Models\Recipe;
 use App\Models\TimesUnit;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -24,7 +24,8 @@ class RecipeExtractingService
             $this->whetherTheRecipeIsAFavoriteForTheLoggedInUser($recipe),
             $recipe,
             $this->getTimeUnitOfMeasures(),
-            $this->getImagesFor($recipe)
+            $this->getImagesFor($recipe),
+            $this->getAuthorOfRecipe($recipe),
         );
     }
 
@@ -97,9 +98,15 @@ class RecipeExtractingService
 
     public function getImagesFor(Recipe $recipe): Collection
     {
-        return Image::whereBelongsTo($recipe)
-            ->orderBy('created_at', 'asc')
-            ->select('path')
+        return $recipe
+            ->images()
+            ->with(['user' => fn($query) => $query->select('id', 'name')])
+            ->select('path', 'user_id')
             ->get();
+    }
+
+    public function getAuthorOfRecipe(Recipe $recipe): Model
+    {
+        return $recipe->user()->getResults();
     }
 }

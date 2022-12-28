@@ -21,8 +21,6 @@ const props = defineProps({
     images: Array
 });
 
-console.debug(props.images);
-
 const isAuthor = computed(() => props.recipe.user_id === usePage().props.value.auth?.user?.id);
 
 const scrollToComments = () => {
@@ -45,11 +43,10 @@ const deleteRecipe = () => {
             :ratings="ratings"
             :title="recipe.title"
             @scroll-to-comments="scrollToComments"
+            :images="images"
         />
 
         <hr class="my-4">
-
-        <!--        <ImageViewer v-if="images !== undefined" :images="images"/>-->
 
         <!-- Meta data-->
         <!--        <section-->

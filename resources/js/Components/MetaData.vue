@@ -2,6 +2,7 @@
 import dayjs from 'dayjs';
 import {computed} from "vue";
 import RecipeActionButtons from "@/Components/RecipeActionButtons.vue";
+import ImageViewer from "@/Components/ImageViewer.vue";
 
 const props = defineProps({
     description: String,
@@ -10,7 +11,8 @@ const props = defineProps({
     ratings: Object,
     creation_date: String,
     difficulty: String,
-    comments_count: Number
+    comments_count: Number,
+    images: Array
 })
 
 const emit = defineEmits(['scrollToComments'])
@@ -25,6 +27,8 @@ const formatCreationDate = (date) => dayjs(date).format('DD.MM.YYYY');
 
 <template>
     <div class="text-2xl mt-4">{{ title }}</div>
+
+    <ImageViewer v-if="images !== undefined" :images="images"/>
 
     <RecipeActionButtons :is-favorite="isFavorite"/>
 

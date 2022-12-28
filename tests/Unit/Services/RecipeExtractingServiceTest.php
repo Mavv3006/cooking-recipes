@@ -205,8 +205,13 @@ class RecipeExtractingServiceTest extends TestCase
         $images = $this->service->getImagesFor($recipe);
 
         $this->assertNotNull($images);
+        $this->assertCount(1, $images);
         $this->assertInstanceOf(Collection::class, $images);
         $this->assertNull($images[0]->description);
+        $this->assertNotNull($images[0]->path);
+        $this->assertNotNull($images[0]->user->name);
+        $this->assertNotNull($images[0]->user->id);
+        $this->assertNotNull($images[0]->user_id);
     }
 
     protected function setUp(): void
