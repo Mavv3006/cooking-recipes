@@ -9,8 +9,9 @@ const props = defineProps({
 </script>
 
 <template>
-    <SectionHeading>Rezept erstellt von</SectionHeading>
-    <div class="flex space-x-4 items-center mt-4">
+    <SectionHeading>Tags / Kategorien</SectionHeading>
+    <div>Rezept erstellt von:</div>
+    <div class="flex space-x-4 items-center">
         <Avatar/>
         <div>{{ username }}</div>
     </div>
