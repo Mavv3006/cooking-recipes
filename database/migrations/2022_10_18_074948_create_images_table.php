@@ -22,7 +22,6 @@ return new class extends Migration {
             $table->foreignIdFor(User::class)
                 ->constrained()
                 ->cascadeOnDelete();
-            $table->integer('order', false, true);
             $table->string('path');
             $table->string('description')->nullable();
             $table->timestamps();

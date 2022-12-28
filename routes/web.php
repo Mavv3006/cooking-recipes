@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\FavoritesController;
+use App\Http\Controllers\ImageController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\RecipeController;
 use App\Http\Controllers\TimesController;
@@ -53,6 +54,14 @@ Route::prefix('recipes')->group(function () {
     Route::post('/{recipe}/favorite', [FavoritesController::class, 'store'])
         ->middleware(['auth:sanctum', config('jetstream.auth_session')])
         ->name('favorites.store');
+    Route::post('/{recipe}/image', [ImageController::class, 'store'])
+        ->name('image.store');
+    Route::get('/{recipe}/image', [ImageController::class, 'create'])
+        ->name('image.create');
+    Route::match(['put', 'patch'], '/{recipe}/image/{image}', [ImageController::class, 'update'])
+        ->name('image.update');
+    Route::delete('/{recipe}/image/{image}', [ImageController::class, 'destroy'])
+        ->name('image.delete');
 });
 
 Route::resource('times', TimesController::class)

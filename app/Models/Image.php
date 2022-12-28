@@ -11,9 +11,10 @@ class Image extends Model
     use HasFactory;
 
     protected $fillable = [
-        'order',
         'path',
-        'description'
+        'description',
+        'recipe_id',
+        'user_id'
     ];
 
     public function user(): BelongsTo

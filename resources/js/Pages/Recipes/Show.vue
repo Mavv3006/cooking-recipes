@@ -7,6 +7,7 @@ import StepSection from "@/Components/StepSection.vue";
 import Author from "@/Components/Author.vue";
 import CommentSection from "@/Components/CommentSection.vue";
 import {computed} from "vue";
+import ImageViewer from "@/Components/ImageViewer.vue";
 
 const props = defineProps({
     recipe: Object,
@@ -18,7 +19,10 @@ const props = defineProps({
     comments: Array,
     ratings: Object,
     times: Object,
+    images: Array
 });
+
+console.debug(props.images);
 
 const isAuthor = computed(() => props.recipe.user_id === usePage().props.value.auth?.user?.id);
 
@@ -46,6 +50,10 @@ const scrollToComments = () => {
 
         <hr class="my-4">
 
+        <ImageViewer v-if="images !== undefined" :images="images"/>
+
+        <hr>
+
         <!-- Meta data-->
         <!--        <section-->
         <!--            class="bg-white max-w-7xl mx-auto sm:px-6 lg:px-8 overflow-hidden shadow-md sm:rounded-lg pt-4 pb-4 my-3">-->
@@ -63,6 +71,13 @@ const scrollToComments = () => {
         <!--            >-->
         <!--                Rezept bearbeiten-->
         <!--            </Link>-->
+        <!--
+         <Link v-if="usePage().props.value.auth?.user?.id !== null"
+                  :href="route('image.create', {'recipe': recipe.id})"
+                  class="block items-center px-3 mb-3 py-1 bg-gray-200 border border-transparent rounded-md hover:bg-gray-100 active:bg-gray-300 focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300 disabled:opacity-25 transition"
+            >
+                Bild hochladen
+            </Link> -->
 
         <!--            <RatingForm :recipe_id="recipe.id"/>-->
         <!--        </section>-->

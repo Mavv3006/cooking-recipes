@@ -19,6 +19,7 @@ class RecipeDTO extends DTO
         public readonly Recipe $recipe,
         public readonly ?Collection $timeUnitOfMeasures,
         public readonly Model $user,
+        public readonly Collection $images
     ) {
     }
 }
