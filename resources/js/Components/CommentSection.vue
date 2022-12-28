@@ -6,7 +6,10 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import Comment from "@/Components/Comment.vue";
 import SectionHeading from "@/Components/SectionHeading.vue";
 
-const props = defineProps({comments: Array, recipeId: Number});
+const props = defineProps({
+    comments: Array,
+    recipeId: Number
+});
 
 const commenting = ref(false);
 
@@ -27,18 +30,20 @@ const submitCreateForm = () => {
 <template>
     <SectionHeading>Kommentare</SectionHeading>
 
-    <div class="flex justify-center">
+    <div class="flex justify-center mt-4">
         <button
-            class="border-2 rounded-full py-2 px-4 hover:bg-gray-200 hover:border-gray-300 active:bg-gray-300 active:border-gray-400 hover:shadow-sm"
-            @click="commenting=true"
-            v-if="commenting===false">
+            v-if="commenting===false"
+            class="border border-green-900 rounded-lg py-2 px-4 hover:bg-green-900/20 hover:border-green-900/30 focus:ring active:bg-green-900/30 hover:shadow-sm"
+            @click="commenting=true">
             <span class="fa-solid fa-pen pr-2"></span>
             Kommentar schreiben
         </button>
     </div>
+
     <form v-if="commenting===true" @submit.prevent="submitCreateForm">
-                    <textarea v-model="commentCreateForm.comment"
-                              class="mt-4 w-full text-gray-900 border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm"></textarea>
+        <textarea
+            v-model="commentCreateForm.comment"
+            class="mt-4 w-full text-gray-900 border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm"></textarea>
         <InputError :message="commentCreateForm.errors.comment" class="mt-2"/>
         <div class="space-x-2">
             <PrimaryButton class="mt-4">Save</PrimaryButton>
@@ -49,7 +54,7 @@ const submitCreateForm = () => {
         </div>
     </form>
 
-    <div class="flex space-y-6 flex-col mt-4">
-        <Comment v-for="comment in comments" :comment="comment" :key="comment.id"></Comment>
+    <div class="flex space-y-8 flex-col mt-4">
+        <Comment v-for="comment in comments" :key="comment.id" :comment="comment"></Comment>
     </div>
 </template>
